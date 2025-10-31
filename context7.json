@@ -1,0 +1,30 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "TalentFlow Agent: AI-Driven Recruitment Automation",
+  "description": "Open-source intelligent agent for high-quality, personalized job application and lead generation, focusing on expert-level response quality and continuous improvement.",
+  "folders": [
+    "src",
+    "docs"
+  ],
+  "excludeFolders": [
+    "tests",
+    "examples",
+    "workflows"
+  ],
+  "excludeFiles": [
+    "README.md",
+    "CONTRIBUTING.md"
+  ],
+  "rules": [
+    "Prioritize quality and personalization of responses over mass application volume to avoid ATS filters.",
+    "Ensure all generated responses demonstrate deep understanding of the vacancy's key performance indicators (KPIs) and pain points.",
+    "Maintain a clear separation between core agent logic and external integration points (e.g., parsers, communication modules).",
+    "All new features must support the project's long-term vision of becoming a full-cycle, data-driven recruitment platform."
+  ],
+  "previousVersions": [
+    {
+      "tag": "v0.1.0",
+      "title": "Initial MVP Release"
+    }
+  ]
+}
