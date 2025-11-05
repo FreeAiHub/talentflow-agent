@@ -1,304 +1,319 @@
 # 🚀 TalentFlow Agent
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-00a393.svg)](https://fastapi.tiangolo.com)
-[![React 18](https://img.shields.io/badge/React-18+-61dafb.svg)](https://reactjs.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ed.svg)](https://docker.com)
-[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088ff.svg)](https://github.com/features/actions)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+<div align="center">
 
-> **Next-Generation AI-Powered Talent Acquisition & B2B Lead Generation Platform**
+![Version](https://img.shields.io/badge/version-0.1.0--pre--mvp-blue)
+![Python](https://img.shields.io/badge/python-3.11+-green)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Status](https://img.shields.io/badge/status-in--development-yellow)
 
-TalentFlow Agent is an advanced SaaS open-source platform that revolutionizes talent acquisition through intelligent automation, multi-channel lead generation, and AI-driven candidate matching. Built for modern HR teams and recruitment agencies.
+**AI-Платформа для автоматизации лидогенерации через интеллектуальный анализ вакансий**
 
-## 🎯 **Core Features**
+[Документация](./docs/PROJECT-STRUCTURE.md) · [Linear Project](https://linear.app/talentflowhub/project/talentflow-bb78fd48809f) · [Мастер-план](./data/TalentFlow-Agent-Master-Plan.md)
 
-### 🤖 **AI-Powered Automation**
-- **Smart Candidate Sourcing**: Automated multi-platform candidate discovery
-- **Intelligent Resume Parsing**: NLP-powered CV analysis and skill extraction
-- **AI Interview Scheduling**: Automated coordination with calendar integration
-- **Predictive Candidate Scoring**: ML-based candidate-job matching algorithms
+</div>
 
-### 📊 **Multi-Channel Lead Generation**
-- **LinkedIn Automation**: Smart outreach campaigns with personalization
-- **Email Sequences**: Automated drip campaigns with A/B testing
-- **Social Media Integration**: Cross-platform candidate engagement
-- **CRM Sync**: Seamless integration with existing sales tools
+---
 
-### 💼 **Enterprise-Ready Features**
-- **Team Collaboration**: Multi-user workspace with role-based permissions
-- **Advanced Analytics**: Real-time recruitment metrics and ROI tracking
-- **White-label Solutions**: Customizable branding for agencies
-- **API-First Architecture**: Extensible integration ecosystem
+## 📖 О проекте
 
-## 🏗️ **Architecture Overview**
+**TalentFlow Agent** — это open-source AI-агент для автоматизации лидогенерации в сфере аутстаффинга и рекрутинга. Система анализирует вакансии с job-порталов (Djinni.co, Work.ua, LinkedIn) и генерирует персонализированные коммерческие предложения с высокой конверсией.
 
-```mermaid
-graph TB
-    A[React Frontend] --> B[FastAPI Gateway]
-    B --> C[Authentication Service]
-    B --> D[AI Processing Engine]
-    B --> E[Lead Generation Service]
-    D --> F[LLM Integration Layer]
-    F --> G[Claude/OpenAI APIs]
-    E --> H[Multi-Channel Connectors]
-    H --> I[LinkedIn/Email/Social]
-    B --> J[PostgreSQL Database]
-    B --> K[Redis Cache]
-    L[Docker Containers] --> M[Kubernetes Orchestration]
+### 🎯 Ключевые возможности
+
+- **🔍 Интеллектуальный парсинг** — Автоматизированный сбор вакансий с нескольких источников
+- **🤖 AI-анализ** — Глубокий анализ требований и болей компании через Claude 3.5 Sonnet
+- **✨ Генерация предложений** — Персонализированные отклики с высокой конверсией
+- **📊 Lead Scoring** — Автоматическая оценка качества лидов
+- **📈 Analytics** — Dashboard с метриками и конверсиями
+- **🔄 Интеграции** — Calendly, CRM, Telegram, Email
+
+---
+
+## 🏗️ Архитектура
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    TalentFlow Agent                          │
+│              AI-Платформа для Lead Generation                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Parsers    │────▶│  AI Engine   │────▶│   Output     │
+│              │     │  (Flowise)   │     │              │
+│ • Djinni.co  │     │              │     │ • Leads DB   │
+│ • Work.ua    │     │ • Analyzer   │     │ • Dashboard  │
+│ • LinkedIn   │     │ • Generator  │     │ • CRM        │
+│ • JobSpy     │     │ • Scorer     │     │ • Linear     │
+└──────────────┘     └──────────────┘     └──────────────┘
 ```
 
-### **Tech Stack**
+**Детальная документация:**
+- 📐 [Глобальная архитектура](./docs/GLOBAL-ARCHITECTURE.md) — полная техническая документация
+- 🔄 [Flowise интеграция](./docs/FLOWISE-INTEGRATION.md) — AI-оркестрация и workflows
+- 🎯 [Презентация для клиента](./docs/CLIENT-PRESENTATION.md) — бизнес-ценность и ROI
+- 📁 [Структура проекта](./docs/PROJECT-STRUCTURE.md) — организация кодовой базы
 
-**Backend**
-- **Python 3.11+** - Core runtime
-- **FastAPI** - High-performance API framework
-- **PostgreSQL** - Primary database with JSONB support
-- **Redis** - Caching and session management
-- **Celery** - Distributed task queue
-- **SQLAlchemy** - ORM with async support
+---
 
-**Frontend**
-- **React 18** - Modern UI framework
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **Vite** - Lightning-fast build tool
-- **React Query** - Server state management
+## 🚀 Быстрый старт
 
-**AI & Integrations**
-- **LangChain** - LLM orchestration
-- **OpenAI/Claude APIs** - Advanced language models
-- **Flowise Integration** - Visual workflow builder
-- **Hugging Face Transformers** - NLP processing
+### Требования
 
-**DevOps & Infrastructure**
-- **Docker & Docker Compose** - Containerization
-- **GitHub Actions** - CI/CD pipeline
-- **Kubernetes** - Container orchestration
-- **AWS/GCP Support** - Cloud deployment
-
-## 🎨 **UI/UX Product Design**
-
-### **Modern Dashboard Experience**
-- **Dark/Light Mode**: Adaptive theme system
-- **Responsive Design**: Mobile-first approach
-- **Real-time Updates**: WebSocket-powered live data
-- **Drag & Drop**: Intuitive candidate pipeline management
-- **Advanced Filtering**: Multi-criteria search with saved views
-
-### **Key User Interfaces**
-1. **Candidate Dashboard** - 360° candidate view with AI insights
-2. **Pipeline Manager** - Visual recruitment funnel with automation
-3. **Analytics Hub** - Comprehensive metrics and reporting
-4. **Campaign Builder** - No-code outreach sequence creator
-5. **Integration Center** - One-click third-party connections
-
-## 💡 **Competitive Advantage**
-
-| Feature | TalentFlow Agent | BulkApply | JobCopilot | LazyApply |
-|---------|------------------|-----------|------------|----------|
-| **AI-Powered Matching** | ✅ Advanced ML | ❌ Basic | ❌ Limited | ❌ None |
-| **Multi-Channel Outreach** | ✅ Full Suite | ❌ Email Only | ❌ Limited | ❌ Basic |
-| **Real-time Analytics** | ✅ Comprehensive | ❌ Basic | ❌ Limited | ❌ None |
-| **API-First Architecture** | ✅ Full REST/GraphQL | ❌ Limited | ❌ None | ❌ None |
-| **Open Source** | ✅ MIT License | ❌ Proprietary | ❌ Proprietary | ❌ Proprietary |
-| **White-label Support** | ✅ Enterprise | ❌ None | ❌ None | ❌ None |
-| **Custom Workflows** | ✅ Flowise Integration | ❌ Fixed | ❌ Limited | ❌ None |
-| **Enterprise Security** | ✅ SOC2 Ready | ❌ Basic | ❌ Basic | ❌ Basic |
-
-## 🚧 **Pain Points We Solve**
-
-### **For HR Teams**
-- ❌ **Manual candidate sourcing** → ✅ **AI-powered discovery**
-- ❌ **Scattered recruitment data** → ✅ **Unified dashboard**
-- ❌ **Inconsistent outreach** → ✅ **Automated sequences**
-- ❌ **Poor candidate experience** → ✅ **Personalized engagement**
-
-### **For Recruitment Agencies**
-- ❌ **Limited scalability** → ✅ **Multi-client management**
-- ❌ **High operational costs** → ✅ **Automation-driven efficiency**
-- ❌ **Lack of differentiation** → ✅ **AI-powered insights**
-- ❌ **Manual reporting** → ✅ **Real-time analytics**
-
-## 🗺️ **Product Roadmap**
-
-### **MVP (Q1 2024)** ✅
-- Core candidate management
-- Basic AI matching
-- LinkedIn integration
-- Essential analytics
-
-### **Pro (Q2 2024)** 🚧
-- Advanced workflow automation
-- Multi-channel outreach
-- Team collaboration features
-- Enhanced AI capabilities
-
-### **Enterprise (Q3 2024)** 📋
-- White-label solutions
-- Advanced security features
-- Custom integrations
-- Dedicated support
-
-### **Future Innovations** 🔮
-- Video interview AI analysis
-- Blockchain candidate verification
-- Advanced predictive analytics
-- Mobile-first recruiter app
-
-## ⚡ **Quick Start**
-
-### **Prerequisites**
 - Python 3.11+
-- Node.js 18+
+- Node.js 18+ (для MCP сервера)
 - Docker & Docker Compose
 - PostgreSQL 15+
+- Redis 7+
 
-### **1. Clone Repository**
+### Установка
+
 ```bash
+# Клонировать репозиторий
 git clone https://github.com/FreeAiHub/talentflow-agent.git
 cd talentflow-agent
-```
 
-### **2. Environment Setup**
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Configure your API keys
-vim .env
-```
-
-### **3. Quick Deploy with Docker**
-```bash
-# Start all services
-docker-compose up -d
-
-# Initialize database
-docker-compose exec api python -m alembic upgrade head
-
-# Create superuser
-docker-compose exec api python -m scripts.create_superuser
-```
-
-### **4. Development Setup**
-```bash
-# Backend setup
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Установить зависимости Python
 pip install -r requirements.txt
 
-# Frontend setup
-cd frontend
+# Установить зависимости Node.js (MCP)
 npm install
-npm run dev
 
-# Start backend
-cd ..
-uvicorn src.main:app --reload
+# Настроить окружение
+cp .env.example .env
+# Отредактируйте .env с вашими API ключами
+
+# Запустить через Docker
+docker-compose up -d
+
+# Запустить миграции
+python scripts/migrate.py
 ```
 
-### **5. Access Application**
-- **Frontend**: http://localhost:3000
-- **API Docs**: http://localhost:8000/docs
-- **Admin Panel**: http://localhost:8000/admin
+### API Ключи
 
-## 📁 **Project Structure**
+Вам понадобятся:
+- **LINEAR_API_KEY** — для интеграции с Linear ([получить](https://linear.app/settings/api))
+- **OPENAI_API_KEY** — для GPT моделей
+- **ANTHROPIC_API_KEY** — для Claude 3.5 Sonnet
+- **FLOWISE_API_KEY** — для Flowise AI оркестрации
+
+---
+
+## 📁 Структура проекта
 
 ```
 talentflow-agent/
-├── 📂 src/                    # Backend source code
-│   ├── 📂 api/                # FastAPI routes & middleware
-│   ├── 📂 agents/             # AI agent implementations
-│   ├── 📂 core/               # Core business logic
-│   ├── 📂 models/             # Database models
-│   ├── 📂 services/           # External service integrations
-│   └── 📂 utils/              # Utility functions
-├── 📂 frontend/               # React frontend application
-│   ├── 📂 src/
-│   │   ├── 📂 components/     # Reusable UI components
-│   │   ├── 📂 pages/          # Page components
-│   │   ├── 📂 hooks/          # Custom React hooks
-│   │   └── 📂 utils/          # Frontend utilities
-├── 📂 tests/                  # Comprehensive test suite
-├── 📂 docs/                   # Documentation
-├── 📂 scripts/                # Deployment & utility scripts
-├── 📂 .github/                # GitHub workflows & templates
-└── 📂 docker/                 # Docker configurations
+├── src/
+│   ├── parsers/         # Парсеры вакансий (Djinni, Work.ua, LinkedIn)
+│   ├── agents/          # AI агенты (анализ, генерация, scoring)
+│   ├── services/        # Бизнес-логика и интеграции
+│   │   ├── flowise_client.py    # Flowise API клиент
+│   │   ├── ai_engine.py         # AI-движок
+│   │   └── integrations/        # Внешние сервисы
+│   ├── api/             # FastAPI REST API
+│   ├── database/        # SQLAlchemy модели и CRUD
+│   ├── mcp-server/      # Linear MCP интеграция
+│   └── utils/           # Утилиты и хелперы
+├── workflows/
+│   ├── flowise/         # Flowise AI workflows
+│   │   ├── analyzer.json        # Workflow анализа вакансий
+│   │   ├── generator.json       # Workflow генерации откликов
+│   │   └── scorer.json          # Workflow оценки лидов
+│   └── n8n/             # n8n автоматизация
+├── tests/               # Unit, Integration, E2E тесты
+├── docs/                # 📚 Подробная документация
+│   ├── GLOBAL-ARCHITECTURE.md   # Архитектура системы
+│   ├── FLOWISE-INTEGRATION.md   # Flowise workflows
+│   ├── CLIENT-PRESENTATION.md   # Презентация проекта
+│   └── PROJECT-STRUCTURE.md     # Структура проекта
+└── docker/              # Docker конфигурация
 ```
 
-## 🔧 **Best Practices Implementation**
+**[Детальная структура →](./docs/PROJECT-STRUCTURE.md) | [Архитектура →](./docs/GLOBAL-ARCHITECTURE.md)**
 
-### **Code Quality**
-- **Type Safety**: Full TypeScript + Pydantic validation
-- **Code Formatting**: Black, Prettier, ESLint
-- **Testing**: 90%+ coverage with pytest & Jest
-- **Documentation**: Auto-generated API docs
+---
 
-### **Security**
-- **Authentication**: JWT + OAuth2 integration
-- **Authorization**: Role-based access control (RBAC)
-- **Data Protection**: Encryption at rest and in transit
-- **Compliance**: GDPR and SOC2 ready
+## ✅ Статус разработки
 
-### **Performance**
-- **Caching**: Multi-layer Redis caching strategy
-- **Database**: Optimized queries with connection pooling
-- **API**: Rate limiting and request optimization
-- **Frontend**: Code splitting and lazy loading
+### Phase 0: Подготовка (Текущая фаза)
+- [x] Настройка Linear MCP сервера
+- [x] Создание структуры проекта
+- [x] 6 Milestones и 13 задач созданы
+- [ ] Анализ структуры Djinni.co
+- [ ] Исследование болей пользователей
+- [ ] Финализация технической спецификации
 
-## 🤝 **Contributing**
+### Phase 1: MVP (В работе)
+- [ ] Базовая инфраструктура
+- [ ] Парсер Djinni.co
+- [ ] Flowise чатфлоу для анализа вакансий
+- [ ] Генератор откликов
+- [ ] База данных и REST API
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+**[Полный roadmap →](https://linear.app/talentflowhub/project/talentflow-bb78fd48809f)**
 
-### **Development Process**
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+---
 
-### **Code Standards**
-- Follow [PEP 8](https://pep8.org/) for Python
-- Use [Conventional Commits](https://www.conventionalcommits.org/)
-- Write comprehensive tests
-- Update documentation
+## 🛠️ Технологический стек
 
-## 📚 **Documentation**
+### Backend
+- **Python 3.11+** — Core language
+- **FastAPI** — Modern async API framework
+- **PostgreSQL** — Primary database
+- **Redis** — Cache & queues
+- **SQLAlchemy 2.0** — ORM
+- **Alembic** — DB migrations
 
-- 📖 [**Full Documentation**](https://docs.talentflow-agent.com)
-- 🏗️ [**Architecture Guide**](docs/architecture.md)
-- 🔌 [**API Reference**](https://api.talentflow-agent.com/docs)
-- 🚀 [**Deployment Guide**](docs/deployment.md)
-- 🧪 [**Testing Guide**](docs/testing.md)
+### AI/ML
+- **Claude 3.5 Sonnet** — Primary LLM (Anthropic)
+- **GPT-4o-mini** — Fallback LLM (OpenAI)
+- **Flowise AI** — Visual AI workflow builder
+- **Langchain** — LLM orchestration
+- **Pinecone** — Vector database
 
-## 🎮 **Live Demo**
+### Frontend (Планируется)
+- **Next.js 14** — React framework
+- **TypeScript** — Type safety
+- **Tailwind CSS** — Styling
+- **Shadcn/ui** — Component library
+- **Echarts** — Data visualization
 
-- 🌐 [**Live Demo**](https://demo.talentflow-agent.com)
-- 📱 [**Mobile App**](https://app.talentflow-agent.com)
-- 🎥 [**Video Tour**](https://youtube.com/watch?v=talentflow-demo)
+### DevOps
+- **Docker** — Containerization
+- **GitHub Actions** — CI/CD
+- **Prometheus** — Monitoring
+- **OpenTelemetry** — Tracing
 
-## 📊 **Community & Support**
+---
 
-- 💬 [**Discord Community**](https://discord.gg/talentflow)
-- 🐛 [**Bug Reports**](https://github.com/FreeAiHub/talentflow-agent/issues)
-- 💡 [**Feature Requests**](https://github.com/FreeAiHub/talentflow-agent/discussions)
-- 📧 [**Enterprise Support**](mailto:enterprise@talentflow-agent.com)
+## 🎯 Use Cases
 
-## 📄 **License**
+### 1. Аутстаф-компании
+Автоматизируйте поиск клиентов через анализ вакансий и генерацию персонализированных предложений.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### 2. Рекрутеры-фрилансеры
+Находите релевантные вакансии и создавайте качественные отклики в 10x меньше времени.
 
-## 🌟 **Star History**
+### 3. HR-агентства
+Масштабируйте лидогенерацию без увеличения команды.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=FreeAiHub/talentflow-agent&type=Date)](https://star-history.com/#FreeAiHub/talentflow-agent&Date)
+---
+
+## 📊 Протестированные инструменты
+
+### ✅ Linear MCP Server
+
+**Статус:** Полностью настроен и работает
+
+**Возможности:**
+- Управление задачами из Cline AI
+- Создание и поиск issues
+- Работа с комментариями и milestones
+- Автоматизация workflow
+
+**Созданная структура:**
+- 6 Milestones (Phase 0-5)
+- 38 задач с детальным описанием
+- Учебная задача с примерами
+
+### 🔄 В разработке
+
+- **Flowise AI Workflows** — визуальные AI-цепочки (см. [документацию](./docs/FLOWISE-INTEGRATION.md))
+  - ✅ Analyzer Workflow — извлечение KPIs и болей
+  - 🚧 Generator Workflow — персонализированные отклики
+  - 🚧 Scorer Workflow — приоритизация лидов
+- **Djinni.co Parser** — парсинг украинских вакансий
+- **Work.ua Parser** — расширение на дополнительный портал
+- **LinkedIn Parser** — международные вакансии (интеграция JobSpy)
+
+---
+
+## 📖 Документация
+
+### 🎯 Для бизнеса и клиентов
+- **[Презентация проекта](./docs/CLIENT-PRESENTATION.md)** — ценность, ROI, use cases
+- **[Мастер-план](./data/TalentFlow-Agent-Master-Plan.md)** — полный план развития
+
+### 🏗️ Для разработчиков
+- **[Глобальная архитектура](./docs/GLOBAL-ARCHITECTURE.md)** — детальная техническая архитектура
+- **[Flowise интеграция](./docs/FLOWISE-INTEGRATION.md)** — AI workflows и оркестрация
+- **[Структура проекта](./docs/PROJECT-STRUCTURE.md)** — организация кодовой базы
+- **[API Reference](./docs/API-REFERENCE.md)** — документация API (в разработке)
+
+### 🔧 Инструменты и гайды
+- **[Linear Guide](./data/Linea/Linear-Practical-Guide.md)** — работа с task management
+- **[Contributing](./CONTRIBUTING.md)** — как внести вклад в проект
+
+---
+
+## 🤝 Контрибьюция
+
+Мы приветствуем вклад от сообщества! Вот как вы можете помочь:
+
+1. 🐛 **Репортить баги** через [Issues](https://github.com/FreeAiHub/talentflow-agent/issues)
+2. 💡 **Предлагать фичи** через [Discussions](https://github.com/FreeAiHub/talentflow-agent/discussions)
+3. 📝 **Улучшать документацию**
+4. 🔧 **Создавать Pull Requests**
+
+**[Contributing Guide →](./CONTRIBUTING.md)** (скоро)
+
+---
+
+## 🗺️ Roadmap
+
+### Q4 2025 (Ноябрь-Декабрь)
+- ✅ Настройка инфраструктуры
+- ⏳ MVP Djinni.co парсер
+- ⏳ Flowise AI интеграция
+- ⏳ Базовый dashboard
+
+### Q1 2026 (Январь-Март)
+- [ ] Work.ua и LinkedIn парсеры
+- [ ] Advanced analytics
+- [ ] Landing page
+- [ ] Product Hunt launch
+
+### Q2 2026 (Апрель-Июнь)
+- [ ] SaaS монетизация
+- [ ] Mobile app
+- [ ] Multi-language support
+- [ ] Enterprise features
+
+**[Детальный roadmap в Linear →](https://linear.app/talentflowhub/project/talentflow-bb78fd48809f)**
+
+---
+
+## 📞 Контакты и Связь
+
+- **GitHub:** [FreeAiHub/talentflow-agent](https://github.com/FreeAiHub/talentflow-agent)
+- **Linear:** [TalentFlow Project](https://linear.app/talentflowhub/project/talentflow-bb78fd48809f)
+- **Issues:** [GitHub Issues](https://github.com/FreeAiHub/talentflow-agent/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/FreeAiHub/talentflow-agent/discussions)
+
+---
+
+## 📜 Лицензия
+
+Этот проект распространяется под лицензией MIT. См. файл [LICENSE](./LICENSE) для деталей.
+
+---
+
+## 🌟 Поддержите проект
+
+Если вам нравится TalentFlow Agent, поставьте ⭐️!
+
+Это помогает привлечь больше контрибьюторов и улучшить проект.
 
 ---
 
 <div align="center">
-  <strong>Built with ❤️ by the TalentFlow Team</strong><br>
-  <a href="https://talentflow-agent.com">Website</a> • 
-  <a href="https://twitter.com/talentflow_ai">Twitter</a> • 
-  <a href="https://linkedin.com/company/talentflow">LinkedIn</a>
+
+**Сделано с ❤️ by FreeAiHub**
+
+[⬆ Наверх](#-talentflow-agent)
+
 </div>
