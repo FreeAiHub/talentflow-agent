@@ -58,7 +58,7 @@ Phase 0          Phase 1           Phase 2              Phase 3-5
 |--------|-----------|-------|-----------|
 | Docker setup | P0 | 11-12.11 | PostgreSQL + Redis running |
 | Flowise deployment | P0 | 12-13.11 | Flowise на localhost:3000 |
-| Claude API integration | P0 | 13-14.11 | API key настроен, тесты проходят |
+| OpenRouter API integration | P0 | 13-14.11 | API key настроен, тесты проходят |
 | Database schema | P1 | 14-15.11 | Tables created, migrations ready |
 | Git workflow | P1 | 15-17.11 | CI/CD базовый |
 

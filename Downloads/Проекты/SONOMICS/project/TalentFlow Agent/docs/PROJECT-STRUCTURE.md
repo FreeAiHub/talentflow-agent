@@ -24,7 +24,7 @@
 │   Parsers    │────▶│  AI Engine   │────▶│   Output     │
 │              │     │              │     │              │
 │ • Djinni.co  │     │ • Flowise    │     │ • Leads DB   │
-│ • Work.ua    │     │ • Claude 3.5 │     │ • Dashboard  │
+│ • Work.ua    │     │ • OpenRouter │     │ • Dashboard  │
 │ • LinkedIn   │     │ • GPT-4o     │     │ • CRM        │
 └──────────────┘     └──────────────┘     └──────────────┘
 ```
@@ -36,7 +36,7 @@
    │          │          │            │              │          │
    │          │          │            │              │          │
    ▼          ▼          ▼            ▼              ▼          ▼
-Djinni    BeautifulSoup Flowise   Алгоритм     Claude 3.5   Email/
+Djinni    BeautifulSoup Flowise   Алгоритм     OpenRouter   Email/
 Work.ua   Scrapy       Claude     scoring      GPT-4o       Telegram
 LinkedIn  Selenium     Context                 Prompts      Webhook
 ```
@@ -254,7 +254,7 @@ talentflow-agent/
 - `lead_scorer` - оценка лидов
 
 **Модели:**
-- Claude 3.5 Sonnet (основная)
+- OpenRouter (основная)
 - GPT-4o-mini (фоллбэк)
 - Local Llama 3.1 (опционально)
 
@@ -416,7 +416,7 @@ Redis 7+
 Langchain 0.1+
 Langgraph 0.1+
 OpenAI SDK
-Anthropic SDK
+OpenRouter SDK
 
 # Parsing
 BeautifulSoup4
@@ -482,7 +482,7 @@ ELK Stack (optional)
 ```
 # LLM Providers
 OpenAI (GPT-4 Turbo, GPT-4o-mini)
-Anthropic (Claude 3.5 Sonnet)
+OpenRouter
 Local (Llama 3.1 via Ollama)
 
 # Orchestration

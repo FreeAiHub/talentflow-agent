@@ -32,7 +32,7 @@ Traditional Recruiting:        TalentFlow Approach:
 - **Quality**: 95%+ accuracy extraction
 
 #### **Layer 2: AI Processing (Анализ и генерация)**
-- **Primary LLM**: Claude 3.5 Sonnet (качество)
+- **Primary LLM**: OpenRouter (качество)
 - **Fallback LLM**: GPT-4o-mini (скорость)
 - **Gateway**: OpenRouter (1000 free requests/day)
 - **RAG**: Pinecone vector database
@@ -106,7 +106,7 @@ Core:
 
 AI/ML:
   Gateway: OpenRouter (1000 free requests/day)
-  Primary LLM: Claude 3.5 Sonnet
+  Primary LLM: OpenRouter
   Fallback LLM: GPT-4o-mini
   Vector DB: Pinecone
   Orchestration: Langchain
@@ -201,7 +201,7 @@ Analytics: Custom dashboard (Next.js)
 ## 🎯 Success Metrics
 
 ### **Product Metrics**
-- **Time to Value**: <24 hours от signup до первого отклика
+- **Time to Value**: <24 часа от signup до первого отклика
 - **Response Quality**: 4.0+ / 5.0 average rating
 - **Automation Rate**: 90%+ vacancies processed automatically
 - **AI Accuracy**: 85%+ correct analysis
@@ -273,23 +273,23 @@ Analytics: Custom dashboard (Next.js)
 
 ---
 
-## 🎯 Immediate Next Steps (30 days)
+## 🎯 Immediate Next Steps (30 дней)
 
 ### **Priority 1: Core MVP**
-1. **Complete Djinni parser** (5 days)
-2. **Finish AI pipeline** (7 days)
-3. **Response generation** (5 days)
-4. **End-to-end testing** (5 days)
+1. **Complete Djinni parser** (5 дней)
+2. **Finish AI pipeline** (7 дней)
+3. **Response generation** (5 дней)
+4. **End-to-end testing** (5 дней)
 
 ### **Priority 2: Integrations**
-5. **Airtable CRM** (3 days)
-6. **Telegram notifications** (2 days)
-7. **Cal.com scheduling** (2 days)
+5. **Airtable CRM** (3 дня)
+6. **Telegram notifications** (2 дня)
+7. **Cal.com scheduling** (2 дня)
 
 ### **Priority 3: Launch Preparation**
-8. **Documentation** (3 days)
-9. **Demo environment** (2 days)
-10. **Beta customer onboarding** (3 days)
+8. **Documentation** (3 дня)
+9. **Demo environment** (2 дня)
+10. **Beta customer onboarding** (3 дня)
 
 ---
 
@@ -298,7 +298,7 @@ Analytics: Custom dashboard (Next.js)
 - **GitHub**: [github.com/FreeAiHub/talentflow-agent](https://github.com/FreeAiHub/talentflow-agent)
 - **Linear**: [linear.app/talentflowhub](https://linear.app/talentflowhub/project/talentflow-bb78fd48809f)
 - **Documentation**: `/docs` folder
-- **Current Status**: Active development, MVP in December 2025
+- **Current Status**: Active development, MVP в декабре 2025
 
 ---
 

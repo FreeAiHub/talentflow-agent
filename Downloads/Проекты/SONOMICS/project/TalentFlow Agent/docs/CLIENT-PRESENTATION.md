@@ -58,7 +58,7 @@
 │       ↓                                              │
 │  ┌──────────────────────────────┐                   │
 │  │   Flowise Analyzer           │                   │
-│  │   (GPT-4o / Claude 3.5)      │                   │
+│  │   (GPT-4o / OpenRouter)      │                   │
 │  └──────────────────────────────┘                   │
 │       ↓                                              │
 │  Структурированный анализ:                          │
@@ -117,7 +117,7 @@ Senior Python Developer нужен для оптимизации backend
 │                 ↓                                     │
 │  ┌──────────────────────────────┐                   │
 │  │   Flowise Generator           │                   │
-│  │   (Claude 3.5 Sonnet)         │                   │
+│  │   (OpenRouter)                │                   │
 │  └──────────────────────────────┘                   │
 │       ↓                                              │
 │  Готовый персонализированный отклик                 │
@@ -374,7 +374,7 @@ ORM: SQLAlchemy 2.0
 ### AI/ML
 ```yaml
 Orchestration: Flowise AI
-LLM Primary: Claude 3.5 Sonnet
+LLM Primary: OpenRouter
 LLM Secondary: GPT-4o-mini
 Vector DB: Pinecone
 Embeddings: OpenAI text-embedding-3
