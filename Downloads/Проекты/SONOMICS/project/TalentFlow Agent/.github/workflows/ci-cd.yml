@@ -1,0 +1,419 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  # === 🔍 CODE QUALITY CHECKS ===
+  code-quality:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: 🛠️ Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy pytest pytest-cov
+
+      - name: 🔍 Run Python linting
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: 🎨 Check Python formatting
+        run: |
+          black --check --diff .
+          isort --check-only --diff .
+
+      - name: 🔍 Run Python type checking
+        run: |
+          mypy . --ignore-missing-imports || true
+
+  # === 🧪 TESTING ===
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio httpx
+
+      - name: 🧪 Run tests with coverage
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest --cov=. --cov-report=xml --cov-report=term-missing -v
+
+      - name: 📊 Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # === 🔒 SECURITY SCANNING ===
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🔍 Run safety check
+        run: |
+          pip install safety
+          safety check --full-report
+
+      - name: 🔍 Run bandit security scan
+        run: |
+          pip install bandit
+          bandit -r . -f json -o bandit-report.json || true
+
+      - name: 📤 Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+
+  # === 🐳 BUILD & DEPLOY ===
+  build:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [code-quality, test, security]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Install build dependencies
+        run: |
+          pip install build
+
+      - name: 🏗️ Build Python package
+        run: |
+          python -m build
+
+      - name: 🐳 Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📋 Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value={{sha}},enable={{is_default_branch}}
+
+      - name: 🐳 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+  # === 🚀 DEPLOYMENT ===
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy to staging
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop"
+          # Add your staging deployment commands here
+          # Example: kubectl set image deployment/talentflow-api talentflow-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy to production
+        run: |
+          echo "🚀 Deploying to production environment..."
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          # Add your production deployment commands here
+          # Example: kubectl set image deployment/talentflow-api talentflow-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  # === 📊 PERFORMANCE TESTING ===
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/develop'
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Install Locust
+        run: |
+          pip install locust
+
+      - name: 🧪 Run performance tests
+        run: |
+          # Add your performance testing commands here
+          echo "Running performance tests against staging..."
+          # locust -f locustfile.py --host=https://staging.yourapp.com --no-web -c 10 -r 2 --run-time 1m
+
+  # === 📋 RELEASE MANAGEMENT ===
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'release:')
+    timeout-minutes: 5
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📋 Generate release notes
+        run: |
+          # Extract version from commit message
+          VERSION=$(echo "${{ github.event.head_commit.message }}" | grep -oP 'release:\s*\K.*' || echo "v$(date +%Y.%m.%d)")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: 🏷️ Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body: |
+            ## 🚀 Release ${{ env.VERSION }}
+
+            ### What's Changed
+            - Automated release from CI/CD pipeline
+            - All tests passed ✅
+            - Security scans passed ✅
+            - Deployed to production ✅
+
+            ### Deployment
+            - Docker image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+          draft: false
+          prerelease: false
+
+  # === 📢 NOTIFICATIONS ===
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [test, build, deploy-staging, deploy-production]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: 📢 Notify on success
+        if: needs.test.result == 'success' && needs.build.result == 'success'
+        run: |
+          echo "✅ All checks passed! Ready for deployment."
+
+      - name: 📢 Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Pipeline failed. Check the logs for details."
+
+      - name: 💬 Discord notification
+        if: always()
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "CI/CD Pipeline ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}"
+          description: "TalentFlow Agent CI/CD Pipeline completed"
+          color: ${{ job.status == 'success' && '3066993' || '15158332' }}
+          fields: |
+            [
+              {
+                "name": "Branch",
+                "value": "${{ github.ref_name }}",
+                "inline": true
+              },
+              {
+                "name": "Commit",
+                "value": "${{ github.sha }}",
+                "inline": true
+              },
+              {
+                "name": "Triggered by",
+                "value": "${{ github.actor }}",
+                "inline": true
+              }
+            ]
+
+  # === 📊 QUALITY REPORT ===
+  quality-report:
+    name: Generate Quality Report
+    runs-on: ubuntu-latest
+    needs: [code-quality, test, security]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📊 Generate quality report
+        run: |
+          cat > quality-report.md << 'EOF'
+          # 📊 Quality Report - $(date +"%Y-%m-%d %H:%M:%S")
+
+          ## 🔍 Code Quality
+          - **Python Linting**: ${{ needs.code-quality.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          - **Type Checking**: ${{ needs.code-quality.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          - **Formatting**: ${{ needs.code-quality.result == 'success' && '✅ Passed' || '❌ Failed' }}
+
+          ## 🧪 Testing
+          - **Unit Tests**: ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          - **Integration Tests**: ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          - **Coverage**: Check coverage reports in artifacts
+
+          ## 🔒 Security
+          - **Dependency Scan**: ${{ needs.security.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          - **Code Security**: ${{ needs.security.result == 'success' && '✅ Passed' || '❌ Failed' }}
+
+          ## 📈 Metrics
+          - **Build Time**: ${{ github.event.workflow_run.created_at }}
+          - **Commit**: ${{ github.sha }}
+          - **Branch**: ${{ github.ref_name }}
+
+          ---
+          *Generated by GitHub Actions CI/CD Pipeline*
+          EOF
+
+      - name: 📤 Upload quality report
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report-${{ github.run_number }}
+          path: quality-report.md

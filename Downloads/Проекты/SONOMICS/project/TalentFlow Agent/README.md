@@ -194,6 +194,17 @@ Vector DB: Pinecone для RAG
 Automation: GitHub Actions, n8n workflows
 ```
 
+### ⚠️ Отказ от неподходящих инструментов
+```yaml
+Не подошли для наших задач:
+- SerpAPI: Ограничения на запросы, неэффективен для структурированного парсинга
+- Tavily API: Высокая стоимость, ограниченная функциональность для job scraping
+- BeautifulSoup: Не справляется с динамическим контентом
+- Selenium: Сложность maintenance и высокие затраты
+
+Выбрана комбинация: APIFY + FireCrawl для максимальной эффективности
+```
+
 ### Integrations
 ```yaml
 Job Boards: APIFY, FireCrawl, LinkedIn API
