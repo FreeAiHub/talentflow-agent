@@ -1,0 +1,39 @@
+{
+  "name": "TalentFlow Agent",
+  "version": "1.0.0",
+  "description": "AI-Powered Lead Generation for Modern Recruiters",
+  "speckit": {
+    "constitution_path": "CONSTITUTION.md",
+    "spec_path": "SPECIFICATION.md", 
+    "plan_path": "PLAN.md",
+    "tasks_path": "tasks/",
+    "implementations_path": "implementations/"
+  },
+  "commands": {
+    "/speckit.constitution": {
+      "description": "Определение принципов проекта",
+      "method": "generate_constitution",
+      "params": ["project_type", "team_structure", "tech_stack"]
+    },
+    "/speckit.specify": {
+      "description": "Создание базовой спецификации", 
+      "method": "generate_specification",
+      "params": ["scope", "features", "requirements"]
+    },
+    "/speckit.plan": {
+      "description": "Создание плана реализации",
+      "method": "generate_plan", 
+      "params": ["timeline", "phases", "milestones"]
+    },
+    "/speckit.tasks": {
+      "description": "Генерация задач",
+      "method": "generate_tasks",
+      "params": ["category", "priority", "assignee"]
+    },
+    "/speckit.implement": {
+      "description": "Выполнение реализации",
+      "method": "execute_implementation",
+      "params": ["task_id", "implementation_type", "dry_run"]
+    }
+  }
+}
