@@ -9,7 +9,7 @@
 
 **AI-Платформа для автоматизации лидогенерации через интеллектуальный анализ вакансий**
 
-[Документация](./docs/PROJECT-STRUCTURE.md) · [Концепция](./CONCEPT.md) · [Roadmap](./ROADMAP.md)
+[Документация](./docs/PROJECT-STRUCTURE.md) · [Концепция](./CONCEPT.md) · [Roadmap](./ROADMAP.md) · [Интеграции](./INTEGRATIONS.md) · [EN](./README_EN.md)
 
 </div>
 
@@ -276,6 +276,7 @@ talentflow-agent/
 ### 🎯 Для бизнеса и клиентов
 - **[Презентация проекта](./docs/CLIENT-PRESENTATION.md)** — ценность, ROI, use cases
 - **[Roadmap](./ROADMAP.md)** — план развития
+- **[Интеграции](./INTEGRATIONS.md)** — Docker, n8n, Instantly.ai, Botpress, голосовые, безопасность, валидация
 
 ### 🏗️ Для разработчиков
 - **[Глобальная архитектура](./docs/GLOBAL-ARCHITECTURE.md)** — детальная техническая архитектура
