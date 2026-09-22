@@ -143,7 +143,7 @@ Senior Python Developer нужен для оптимизации backend
 Готов показать архитектурное решение для вашего кейса. 
 Предлагаю 30-минутный созвон на этой неделе?
 
-Календарь: https://calendly.com/talentflow/demo
+Календарь: (ссылка Calendly будет добавлена)
 ```
 
 **Почему это работает:**
@@ -509,7 +509,7 @@ Nice to have: FinTech domain knowledge
 Готов показать детальную архитектуру решения для вашего кейса. 
 30-минутный созвон?
 
-📅 Календарь: https://calendly.com/demo
+📅 Календарь: (ссылка Calendly будет добавлена)
 📧 Email: contact@example.com
 ```
 
@@ -583,7 +583,7 @@ Nice to have: FinTech domain knowledge
 - **GitHub:** [github.com/FreeAiHub/talentflow-agent](https://github.com/FreeAiHub/talentflow-agent)
 - **Linear (Roadmap):** [linear.app/talentflow](https://linear.app/talentflowhub)
 - **Email:** talentflow@example.com
-- **Demo:** [Запланировать встречу](https://calendly.com/talentflow/demo)
+- **Demo:** **Запланировать встречу:** ссылка Calendly будет добавлена
 
 ---
 

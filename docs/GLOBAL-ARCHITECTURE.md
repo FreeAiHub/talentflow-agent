@@ -609,7 +609,7 @@ Layer 3: CDN (Cloudflare)
 - [Flowise Integration](./FLOWISE-INTEGRATION.md) — детали AI-оркестрации
 - [Client Presentation](./CLIENT-PRESENTATION.md) — презентация для клиентов
 - [Project Structure](./PROJECT-STRUCTURE.md) — структура кодовой базы
-- [API Reference](./API-REFERENCE.md) — документация API (todo)
+- API Reference — документация API (todo, появится в фазе MVP)
 
 ---
 

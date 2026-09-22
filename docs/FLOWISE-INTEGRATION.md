@@ -544,7 +544,7 @@ Single Flowise Instance → Load Balancer → Multiple Flowise Nodes
 - [Flowise Documentation](https://docs.flowiseai.com/)
 - [Flowise GitHub](https://github.com/FlowiseAI/Flowise)
 - [Community Discord](https://discord.gg/flowise)
-- [Example Workflows](https://github.com/FlowiseAI/FlowiseExamples)
+- [Example Workflows](https://github.com/FlowiseAI/Flowise)
 
 ---
 

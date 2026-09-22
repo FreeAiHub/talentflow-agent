@@ -109,8 +109,8 @@ git commit -m "docs: add comprehensive documentation
 ### Шаг 2: Публикация на GitHub
 
 ```bash
-# Добавьте remote origin (замените YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/talentflow-agent.git
+# Добавьте remote origin (замените FreeAiHub)
+git remote add origin https://github.com/FreeAiHub/talentflow-agent.git
 
 # Отправьте изменения
 git branch -M main
@@ -131,19 +131,19 @@ git push -u origin main
 После публикации предоставьте клиенту следующие ссылки:
 
 ### Основные документы:
-- **Главная страница:** https://github.com/YOUR_USERNAME/talentflow-agent
-- **Руководство для клиента:** https://github.com/YOUR_USERNAME/talentflow-agent/blob/main/CLIENT-GUIDE.md
-- **Презентация проекта:** https://github.com/YOUR_USERNAME/talentflow-agent/blob/main/docs/CLIENT-PRESENTATION.md
+- **Главная страница:** https://github.com/FreeAiHub/talentflow-agent
+- **Руководство для клиента:** https://github.com/FreeAiHub/talentflow-agent/blob/main/CLIENT-GUIDE.md
+- **Презентация проекта:** https://github.com/FreeAiHub/talentflow-agent/blob/main/docs/CLIENT-PRESENTATION.md
 
 ### Техническая документация:
-- **Архитектура системы:** https://github.com/YOUR_USERNAME/talentflow-agent/blob/main/docs/GLOBAL-ARCHITECTURE.md
-- **Flowise интеграция:** https://github.com/YOUR_USERNAME/talentflow-agent/blob/main/docs/FLOWISE-INTEGRATION.md
-- **Как внести вклад:** https://github.com/YOUR_USERNAME/talentflow-agent/blob/main/CONTRIBUTING.md
+- **Архитектура системы:** https://github.com/FreeAiHub/talentflow-agent/blob/main/docs/GLOBAL-ARCHITECTURE.md
+- **Flowise интеграция:** https://github.com/FreeAiHub/talentflow-agent/blob/main/docs/FLOWISE-INTEGRATION.md
+- **Как внести вклад:** https://github.com/FreeAiHub/talentflow-agent/blob/main/CONTRIBUTING.md
 
 ### GitHub Features:
-- **Issues:** https://github.com/YOUR_USERNAME/talentflow-agent/issues
-- **Discussions:** https://github.com/YOUR_USERNAME/talentflow-agent/discussions
-- **Projects:** https://github.com/YOUR_USERNAME/talentflow-agent/projects
+- **Issues:** https://github.com/FreeAiHub/talentflow-agent/issues
+- **Discussions:** https://github.com/FreeAiHub/talentflow-agent/discussions
+- **Projects:** https://github.com/FreeAiHub/talentflow-agent/projects
 
 ---
 
