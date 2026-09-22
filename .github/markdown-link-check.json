@@ -1,0 +1,9 @@
+{
+  "retryOn429": true,
+  "retryCounts": 3,
+  "fallbackRetryDelay": "30s",
+  "ignorePatterns": [
+    { "pattern": "https://linear.app" },
+    { "pattern": "http://localhost" }
+  ]
+}
