@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      TALENTFLOW_DATABASE_URL: "postgresql+psycopg://talentflow:talentflow@db:5432/talentflow"
+      TALENTFLOW_HUMAN_IN_THE_LOOP: "true"
+    depends_on:
+      - db
+    restart: unless-stopped
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: talentflow
+      POSTGRES_PASSWORD: talentflow
+      POSTGRES_DB: talentflow
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
