@@ -25,17 +25,52 @@ class PromptNotFound(LlmError):
     """A prompt file is missing."""
 
 
-def prompts_dir() -> Path:
-    """Directory holding the prompt files.
+def candidate_prompt_dirs() -> list[Path]:
+    """Everywhere the prompt files might live, most specific first.
 
-    ``TALENTFLOW_PROMPTS_DIR`` wins; otherwise the repository's ``prompts/``
-    directory, resolved from this file's location.
+    The loader used to assume a source checkout, which is true in development
+    and false inside a container: there the package sits in site-packages, so
+    the path relative to this file points somewhere that does not exist. The
+    search covers both layouts, and the explicit environment variable wins.
+    """
+    here = Path(__file__).resolve()
+    candidates: list[Path] = []
+
+    override = os.environ.get("TALENTFLOW_PROMPTS_DIR")
+    if override:
+        candidates.append(Path(override).expanduser())
+
+    candidates.extend(
+        [
+            # Development checkout: src/talentflow/llm/prompts.py -> repo root
+            here.parents[3] / "prompts",
+            # Shipped as package data next to the package
+            here.parents[1] / "prompts",
+            # Container layout, and the working directory as a last resort
+            Path("/app/prompts"),
+            Path.cwd() / "prompts",
+        ]
+    )
+    return candidates
+
+
+def prompts_dir() -> Path:
+    """Where the prompt files are.
+
+    An explicit ``TALENTFLOW_PROMPTS_DIR`` wins unconditionally, even if it does
+    not exist: it is a decision, and silently ignoring a typo in it would mean
+    loading different prompts than the operator asked for. Without an override
+    the first candidate that exists wins, so a source checkout and a container
+    both work with no configuration.
     """
     override = os.environ.get("TALENTFLOW_PROMPTS_DIR")
     if override:
-        return Path(override).expanduser().resolve()
-    # src/talentflow/llm/prompts.py -> repository root
-    return Path(__file__).resolve().parents[3] / "prompts"
+        return Path(override).expanduser()
+
+    for candidate in candidate_prompt_dirs():
+        if candidate.is_dir():
+            return candidate
+    return candidate_prompt_dirs()[0]
 
 
 @lru_cache(maxsize=32)
@@ -45,9 +80,10 @@ def load_prompt(name: str) -> str:
     try:
         return path.read_text(encoding="utf-8")
     except FileNotFoundError as exc:
+        tried = "\n  ".join(str(c) for c in candidate_prompt_dirs())
         raise PromptNotFound(
-            f"prompt {name!r} not found at {path}. "
-            "Set TALENTFLOW_PROMPTS_DIR if the prompts live elsewhere."
+            f"prompt {name!r} not found at {path}.\nSearched:\n  {tried}\n"
+            "Set TALENTFLOW_PROMPTS_DIR to the directory holding the prompt files."
         ) from exc
 
 
