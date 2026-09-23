@@ -1,6 +1,6 @@
 """Smoke test for the health endpoint."""
 
-from fastapi.testclient import TestClient
+import httpx
 
 # Public contract of GET /health. Bump deliberately together with the release;
 # the value is written out literally on purpose so that an accidental change to
@@ -8,8 +8,8 @@ from fastapi.testclient import TestClient
 EXPECTED_HEALTH_BODY = {"status": "ok", "version": "0.1.0"}
 
 
-def test_health_returns_ok_and_version(client: TestClient) -> None:
-    response = client.get("/health")
+async def test_health_returns_ok_and_version(api_client: httpx.AsyncClient) -> None:
+    response = await api_client.get("/health")
 
     assert response.status_code == 200
     assert response.json() == EXPECTED_HEALTH_BODY
