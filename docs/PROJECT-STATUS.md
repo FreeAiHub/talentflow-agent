@@ -1,382 +1,136 @@
 # 📊 Статус проекта TalentFlow Agent
 
-## 🎯 Executive Summary
-
-**TalentFlow Agent** — это AI-платформа для автоматизации лидогенерации в рекрутинге. Проект находится в стадии **активной разработки MVP** с фокусом на украинский рынок (Djinni.co) и международное расширение.
-
-### 📈 Ключевые достижения
-- ✅ **Архитектура спроектирована** и документирована
-- ✅ **Linear интеграция** настроена и работает
-- ✅ **GitHub репозиторий** создан и структурирован
-- ✅ **Документация** подготовлена для клиентов
-- ✅ **Конкурентный анализ** завершен
-- ✅ **AI-фреймворк** для тестирования разработан
+> **Обновлено 23.09.2026.** Предыдущая редакция описывала работу, которой в
+> репозитории не было: проценты готовности без основания, Pinecone,
+> LangChain и Linear как «работающие». Здесь — то, что можно проверить,
+> запустив код.
 
 ---
 
-## 🔬 Проделанная работа
+## Что это
 
-### **Фаза 1: Исследование и планирование (Октябрь 2025)**
+AI-платформа автоматизации лидогенерации в рекрутинге. Конвейер:
 
-#### ✅ Исследование рынка
-**Что сделано:**
-- Проанализированы 15+ конкурентов в AI-рекрутинге
-- Определены 3 целевых сегмента (аутстафф, HR-агентства, фрилансеры)
-- Выявлены ключевые болевые точки и готовность платить
-- Создана стратегия "Blue Ocean" — AI-Powered Proactive Sourcing
-
-**Результаты:**
-- TAM: $2.1B → $8.6B к 2030
-- Наша позиция: Единственный AI-powered proactive sourcing для SMB
-- Ценообразование: $99-299/месяц vs $50K+ у конкурентов
-
-#### ✅ Техническая архитектура
-**Что сделано:**
-- Спроектирована микросервисная архитектура
-- Определен технологический стек (Python, FastAPI, PostgreSQL, Redis)
-- Создана схема потоков данных от вакансии до встречи
-- Спроектирована система масштабирования
-
-**Результаты:**
-- Готовность к 1000+ вакансий/день
-- 99.9% uptime архитектура
-- Multi-cloud deployment ready
-
-#### ✅ AI/ML стратегия
-**Что сделано:**
-- Исследованы LLM провайдеры (OpenRouter, Local models)
-- Настроен OpenRouter как unified gateway
-- Разработана RAG архитектура с Pinecone
-- Создана система continuous learning
-
-**Результаты:**
-- **OpenRouter**: 1000 бесплатных запросов/день
-- **OpenRouter**: Primary LLM для качества
-- **GPT-4o-mini**: Fallback для скорости
-- **Local Llama 3.1**: Cost optimization для больших объемов
-
-### **Фаза 2: Инфраструктура и инструменты (Ноябрь 2025)**
-
-#### ✅ Linear Integration
-**Что сделано:**
-- Настроен Linear сервер для task management
-- Создана структура проекта: 6 milestones, 38 задач
-- Интегрирована автоматизация workflow
-- Настроена синхронизация с GitHub
-
-**Результаты:**
-- Полная интеграция с Linear проектом
-- Автоматическое создание issues из GitHub
-- Команда может работать в привычном интерфейсе
-- **Статус**: ✅ Полностью работает
-
-#### ✅ GitHub Infrastructure
-**Что сделано:**
-- Создан репозиторий FreeAiHub/talentflow-agent
-- Настроена структура документации
-- Подготовлены issue templates
-- Созданы guidelines для контрибьюторов
-
-**Результаты:**
-- Professional GitHub presence
-- Готовность к open source development
-- Clear contribution guidelines
-- **Статус**: ✅ Готово к использованию
-
-#### ✅ Парсеры и инструменты
-**Что протестировано:**
-- **Apify**: ✅ Выбран как основной инструмент
-  - Browser automation для сложных сайтов
-  - 10,000 requests/month в бесплатном плане
-  - Готовые парсеры для LinkedIn, Indeed
-- **Tavily API**: ✅ Протестирован
-  - Web scraping + search capabilities
-  - Good для анализа компаний
-- **SerpAPI**: ✅ Протестирован
-  - Google search results API
-  - Useful для company research
-- **Firecrawl**: ✅ Изучен
-  - LLM-powered web extraction
-  - Перспективно для сложных сайтов
-
-**Что НЕ подошло:**
-- JobSpy: Ограниченная функциональность для LinkedIn
-- BeautifulSoup: Не справляется с динамическим контентом
-- Selenium: Сложность maintenance
-
-**Результаты:**
-- **Apify** выбран как основной парсер
-- Backup стратегия с Tavily + SerpAPI
-- Готовность к масштабированию
-- **Статус**: ✅ Инструменты выбраны и протестированы
-
-### **Фаза 3: AI Workflows и тестирование (Ноябрь 2025)**
-
-#### ✅ AI Training Framework
-**Что создано:**
-- Многоуровневая система тестирования
-- A/B testing framework для промптов
-- Quality assurance процессы
-- Continuous improvement pipeline
-
-**Результаты:**
-- Готовность к обучению AI на реальных данных
-- Система метрик для отслеживания качества
-- Автоматизированное тестирование
-- **Статус**: ✅ Фреймворк готов
-
-#### ✅ Workflow Testing System
-**Что разработано:**
-- Unit tests для парсеров
-- Integration tests для AI pipeline
-- Performance testing framework
-- End-to-end тестирование
-
-**Результаты:**
-- 90%+ test coverage готовность
-- Load testing для 1000+ vacancies/day
-- Quality gates для production
-- **Статус**: ✅ Система тестирования готова
-
----
-
-## 🚧 Текущий статус разработки
-
-### **В работе (November 2025)**
-
-#### 🔄 Djinni.co Parser
-**Прогресс: 60%**
-- ✅ HTML структура изучена
-- ✅ Anti-bot защита проанализирована
-- 🔄 Apify actor разрабатывается
-- ⏳ Rate limiting настраивается
-- ⏳ Data validation тестируется
-
-**Ожидаемый результат:**
-- 500+ вакансий/день с Djinni.co
-- 95%+ accuracy extraction
-- Automatic deduplication
-
-#### 🔄 AI Analysis Pipeline
-**Прогресс: 40%**
-- ✅ OpenRouter интеграция настроена
-- ✅ OpenRouter подключен
-- 🔄 Prompt templates разрабатываются
-- ⏳ RAG система с Pinecone настраивается
-- ⏳ Quality scoring алгоритм тестируется
-
-**Ожидаемый результат:**
-- <30 секунд на анализ вакансии
-- 90%+ точность извлечения pain points
-- Автоматический scoring лидов
-
-#### 🔄 Response Generation
-**Прогресс: 30%**
-- ✅ Template структура спроектирована
-- 🔄 Personalization алгоритм разрабатывается
-- ⏳ A/B testing система настраивается
-- ⏳ Quality validation тестируется
-
-**Ожидаемый результат:**
-- Персонализированные отклики за 15 секунд
-- 4.0+ / 5.0 quality rating
-- 8-12% конверсия в встречи
-
-### **Планируется (Декабрь 2025)**
-
-#### 📅 Интеграции
-- **Airtable CRM**: Lead management
-- **Telegram Bot**: Real-time notifications
-- **Cal.com**: Meeting scheduling
-- **Make.com**: Workflow automation
-- **Slack**: Team notifications
-
-#### 📅 Frontend Dashboard
-- **Next.js 14**: React framework
-- **Real-time metrics**: Live performance
-- **A/B testing interface**: Prompt optimization
-- **Lead management**: Pipeline visualization
-
----
-
-## 💡 Ключевые инсайты и решения
-
-### **AI Strategy Insights**
-
-#### OpenRouter vs Direct APIs
-**Проблема**: API лимиты в бесплатных планах
-**Решение**: OpenRouter unified gateway
-**Результат**: 1000 бесплатных requests/day + доступ к 10+ моделям
-
-```yaml
-OpenRouter Benefits:
-  - 1000 free requests/day
-  - OpenRouter access
-  - GPT-4o-mini fallback
-  - Local Llama 3.1 for cost optimization
-  - Unified API для всех моделей
+```
+Djinni → парсинг → дедупликация → БД → LLM-скоринг → фильтр по порогу
+      → генерация отклика → проверка на выдумки → подтверждение человеком
+      → уведомление в Telegram
 ```
 
-#### RAG Architecture Decision
-**Проблема**: Как обучать AI на успешных откликах
-**Решение**: Pinecone vector database + Langchain
-**Результат**: Continuous learning из реальных результатов
-
-### **Parser Strategy Insights**
-
-#### Apify как основной инструмент
-**Проблема**: Сложность парсинга динамических сайтов
-**Решение**: Apify browser automation
-**Результат**: 10,000 requests/month free + готовые actors
-
-```yaml
-Apify Advantages:
-  - Browser automation (JavaScript support)
-  - Ready-made parsers (LinkedIn, Indeed)
-  - Proxy rotation included
-  - Easy scaling
-  - Cost-effective
-```
-
-#### Multi-source approach
-**Проблема**: Зависимость от одного источника
-**Решение**: Комбинация Apify + Tavily + SerpAPI
-**Результат**: Redundancy + лучшее покрытие рынка
-
-### **Business Model Insights**
-
-#### SMB-focused pricing
-**Проблема**: Enterprise решения слишком дорогие
-**Решение**: $99-299/month для SMB
-**Результат**: Доступность для 95% рынка
-
-#### Proactive vs Reactive
-**Проблема**: Все конкуренты ждут applications
-**Решение**: Active sourcing + AI personalization
-**Результат**: Доступ к "скрытому" рынку талантов
+Целевой рынок — украинские аутстафф-компании и HR-агентства.
 
 ---
 
-## 📊 Метрики и KPI
+## Состояние на 23.09.2026
 
-### **Технические метрики (Target)**
+| Слой | Состояние | Чем подтверждается |
+|------|-----------|--------------------|
+| Парсер Djinni | ✅ работает | CLI собирает реальные вакансии, один HTTP-запрос на 15 вакансий |
+| Хранилище | ✅ работает | SQLAlchemy 2.0 async, Alembic, PostgreSQL или SQLite |
+| LLM-скоринг | ⚠️ код готов, живой прогон не сделан | 144 теста без сети; нужен ключ провайдера |
+| Генерация откликов | ⚠️ код готов, живой прогон не сделан | 46 тестов; нужен ключ провайдера |
+| Проверка на выдумки | ⚠️ код готов | отдельный промпт, вердикт `reject` блокирует отправку |
+| Гейт подтверждения | ✅ работает | проверено вживую: без approve отправка невозможна |
+| Telegram-уведомления | ⚠️ код готов | вебхук проверен вживую; живая отправка ждёт токен |
+| Планировщик | ✅ работает | два прогона подряд, идемпотентность подтверждена |
+| Наблюдаемость | ✅ работает | таблица `llm_calls`, `/api/v1/stats`, структурные логи |
+| Деплой | ⚠️ подготовлен | образ и compose есть, сборка не проверена (нет демона Docker) |
+| CI | ✅ работает | 6 проверок: lint, test, typecheck, links, yamllint, compile |
 
-| Метрика | Target | Current | Status |
-|---------|--------|---------|--------|
-| **Vacancy Processing** | <5 min | In development | 🔄 |
-| **Response Generation** | <30 sec | In development | 🔄 |
-| **AI Accuracy** | >90% | Framework ready | 🔄 |
-| **System Uptime** | 99.9% | Architecture ready | 🔄 |
-| **Throughput** | 1000+/day | Scalable design | 🔄 |
+**Тестов: 270.** Все без сети.
 
-### **Бизнес метрики (Projected)**
-
-| Метрика | Month 3 | Month 6 | Month 12 |
-|---------|---------|---------|----------|
-| **Customers** | 25 | 100 | 500 |
-| **MRR** | $5K | $25K | $150K |
-| **Response Quality** | 4.0/5.0 | 4.2/5.0 | 4.5/5.0 |
-| **Conversion Rate** | 8% | 10% | 12% |
-| **Customer Satisfaction** | NPS 40 | NPS 50 | NPS 60 |
+**Проверок в CI: 6.** Все зелёные на `main`.
 
 ---
 
-## 🎯 Следующие шаги (30 дней)
+## Что работает по-настоящему
 
-### **Приоритет 1: Core MVP**
-1. **Завершить Djinni.co parser** (5 дней)
-   - Apify actor optimization
-   - Data validation testing
-   - Rate limiting implementation
+**Парсер.** Djinni отдаёт листинг с массивом schema.org `JobPosting` — разбор
+идёт по JSON, а не по CSS-селекторам. Полное описание вакансии приходит вместе
+с листингом, поэтому второй запрос не нужен: 1 запрос на 15 вакансий вместо 16.
+Ни `JobSpy`, ни `BeautifulSoup`, ни Apify, ни прокси не понадобились.
 
-2. **AI Analysis pipeline** (7 дней)
-   - Prompt templates finalization
-   - RAG system setup
-   - Quality scoring algorithm
+**Гейт подтверждения.** Отправка невозможна без явного решения человека.
+Проверка живёт в репозитории, поэтому API, планировщик и Telegram-бот проходят
+одну и ту же проверку, а не каждый свою.
 
-3. **Response generation** (5 дней)
-   - Template system implementation
-   - Personalization logic
-   - A/B testing setup
+**Проверка на выдуманные факты.** Главный риск LLM-аутрича — не плохой стиль, а
+уверенно приписанный клиенту факт. Второй вызов модели перечисляет утверждения,
+которых нет в тексте вакансии; вердикт `reject` делает черновик неутверждаемым
+даже вручную.
 
-### **Приоритет 2: Integrations**
-4. **CRM integration** (3 дня)
-   - Airtable setup
-   - Lead management workflow
-   - Data synchronization
-
-5. **Notification system** (2 дня)
-   - Telegram bot
-   - Slack integration
-   - Email notifications
-
-### **Приоритет 3: Testing & Launch**
-6. **End-to-end testing** (5 дней)
-   - Full workflow validation
-   - Performance optimization
-   - Bug fixes
-
-7. **Beta launch preparation** (3 дня)
-   - Documentation completion
-   - Demo environment setup
-   - Customer onboarding flow
+**Идемпотентность.** Повторный прогон не дублирует вакансии: проверено на живых
+данных — второй запуск собрал 0 новых.
 
 ---
 
-## 💰 Budget и ресурсы
+## Чего нет, хотя раньше заявлялось
 
-### **Текущие расходы (месячно)**
-- **OpenRouter**: $0 (1000 free requests)
-- **Apify**: $0 (10K free requests)
-- **Pinecone**: $0 (free tier)
-- **Linear**: $0 (free for open source)
-- **GitHub**: $0 (public repo)
-- **Total**: $0/месяц
-
-### **Планируемые расходы (при 100 customers)**
-- **OpenRouter**: $200/month (API calls)
-- **Apify**: $50/month (additional requests)
-- **Pinecone**: $100/month (vector storage)
-- **Infrastructure**: $300/month (servers, DB)
-- **Total**: $650/month (6.5% от revenue)
-
-### **ROI Projection**
-- **Customer LTV**: $2,400 (12 months × $200)
-- **Customer CAC**: $200 (marketing + sales)
-- **LTV:CAC Ratio**: 12:1
-- **Break-even**: 1 customer covers monthly costs
+| Заявлялось | Действительность |
+|------------|------------------|
+| Pinecone, RAG-система | нет ни зависимости, ни кода. RAG — фаза 2, и сначала нужно решить, нужен ли он |
+| LangChain | не в зависимостях и не используется. Промпты рендерятся своей функцией |
+| Linear как рабочий инструмент | в репозитории нет ни конфигурации, ни следов интеграции |
+| JobSpy для Djinni | JobSpy **не поддерживает** Djinni и Work.ua. Парсер написан свой |
+| n8n как оркестратор | решено не брать: планировщик в приложении покрывает задачу, а n8n добавил бы сервис, БД и обновления ради одного cron |
+| Проценты готовности (60/40/30) | были взяты без основания. Заменены таблицей выше со ссылкой на подтверждение |
 
 ---
 
-## 🚀 Готовность к демонстрации
+## Метрики
 
-### **Что готово показать клиентам:**
-1. **📊 Competitive Analysis** — Полное понимание рынка
-2. **🏗️ Technical Architecture** — Детальная схема системы
-3. **🧪 AI Testing Framework** — Готовность к обучению
-4. **📈 Business Model** — Четкая стратегия монетизации
-5. **🎯 Go-to-Market Plan** — Пошаговый план запуска
+Цифры продуктовых метрик **ещё не измерены** — для них нужен живой прогон с
+ключом. Что известно точно:
 
-### **Что в разработке:**
-1. **🔄 Djinni Parser** — 60% готовности
-2. **🤖 AI Pipeline** — 40% готовности
-3. **📝 Response Generation** — 30% готовности
+| Метрика | Значение | Как получено |
+|---------|----------|--------------|
+| Вакансий на странице листинга | 15 | записанная страница |
+| Запросов на 15 вакансий | 1 | измерено на живом Djinni |
+| Стоимость парсинга | $0 | обычный HTTP, без прокси и платных акторов |
+| Тестов | 270 | `pytest -q` |
+| Покрытие CI | 6 проверок | `.github/workflows/` |
 
-### **Timeline до demo-ready:**
-- **Week 1**: Завершить Djinni parser
-- **Week 2**: AI analysis pipeline
-- **Week 3**: Response generation
-- **Week 4**: End-to-end testing + demo
+Целевые метрики на первые 10 дней — в
+[`DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#-метрики-прогресса).
 
 ---
 
-## 📞 Контакты и доступ
+## Цена
 
-- **GitHub**: [github.com/FreeAiHub/talentflow-agent](https://github.com/FreeAiHub/talentflow-agent)
-- **Linear**: [linear.app/talentflowhub](https://linear.app/talentflowhub/project/talentflow-bb78fd48809f)
-- **Documentation**: Полная документация в `/docs`
-- **Status**: Active development, MVP в декабре 2025
+| Статья | Сейчас | При 100 клиентах |
+|--------|--------|------------------|
+| Парсинг | $0 | $0 |
+| LLM | $0 (бесплатные тарифы) или разовые $10 | по факту расхода |
+| Хостинг | $0 локально | стоимость VPS — **не проверена** |
+| Наблюдаемость | $0 (Langfuse self-hosted, MIT) | $0 |
+
+**Ключевое ограничение по бюджету:** бесплатный OpenRouter даёт **50 запросов
+в сутки**, а конвейеру нужно около 250. Groq даёт 1000 бесплатно, Cerebras —
+около 1M токенов в сутки. Подробности и ссылки —
+в [`docs/research/2026-09-23-llm-stack.md`](research/2026-09-23-llm-stack.md).
 
 ---
 
-**Последнее обновление**: 05.11.2025 | **Статус**: Active Development | **Next Milestone**: MVP Demo (December 2025)
+## Что нужно, чтобы двинуться дальше
+
+1. **Ключ LLM** (Groq или Cerebras — бесплатно) — закрывает Дни 4 и 5, после
+   чего появляются настоящие метрики точности скоринга.
+2. **Токен Telegram-бота** — живая отправка уведомлений.
+3. **Сервер и домен** — деплой и суточный прогон.
+4. **Реальный ICP и профиль отправителя** — сейчас в настройках заготовки.
+   Без них оценки не имеют коммерческого смысла, а письма выходят общими.
+
+---
+
+## Ссылки
+
+- [План развития](../DEVELOPMENT_PLAN.md) — 10 дней с DoD
+- [Деплой](DEPLOY.md) — пошаговая инструкция
+- [Демонстрация](DEMO.md) — сквозной сценарий
+- [Рисерч](research/) — 5 отчётов с источниками
+- [Роли агентов](AGENT-ROSTER.md) — кто что делает
+
+---
+
+*Обновлено: 23.09.2026. Всё в таблице состояния подтверждается командой или
+тестом; непроверенное помечено явно.*
