@@ -1,5 +1,6 @@
 """FastAPI application: REST feed, application review, voice/webhook entrypoints."""
 
+import hmac
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -270,7 +271,40 @@ async def telegram_webhook(
     }
 
 
+def verify_vapi_secret(provided: str | None, expected: str | None) -> bool:
+    """Whether a Vapi webhook request carries the configured server secret.
+
+    Compares in constant time: a comparison that returns early leaks the secret
+    one byte at a time to anyone willing to measure the responses.
+    """
+    if not expected or not provided:
+        return False
+    return hmac.compare_digest(provided, expected)
+
+
 @app.post("/webhooks/vapi")
-async def vapi_webhook(event: VapiWebhook) -> dict:
-    """Vapi voice webhook; HMAC signature validation lands in phase 2."""
+async def vapi_webhook(
+    event: VapiWebhook,
+    signature: Annotated[str | None, Header(alias="X-Vapi-Signature")] = None,
+) -> dict:
+    """Vapi voice webhook.
+
+    Unauthenticated until now: anyone who knew the URL could post events. The
+    endpoint fails closed, so an unconfigured secret stops traffic rather than
+    silently accepting it.
+    """
+    secret = get_settings().vapi_webhook_secret
+    if not secret:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Vapi webhook is not configured: set TALENTFLOW_VAPI_WEBHOOK_SECRET "
+                "to the server secret from the Vapi dashboard"
+            ),
+        )
+    if not verify_vapi_secret(signature, secret):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid Vapi signature"
+        )
+
     return {"received": event.event}

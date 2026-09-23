@@ -100,6 +100,13 @@ class Settings(BaseSettings):
     #: Ceiling on outgoing messages, to stay well clear of Telegram's limits.
     telegram_max_messages_per_minute: int = 20
 
+    # --- Voice -------------------------------------------------------------
+    #: Vapi sends the configured server secret in ``X-Vapi-Signature``.
+    #: Despite the name it is a shared token, not an HMAC over the body:
+    #: https://github.com/devflowinc/vapi-docs (server-authentication).
+    #: Without it the webhook refuses every request rather than trusting them.
+    vapi_webhook_secret: str | None = None
+
     # --- Observability -----------------------------------------------------
     # Optional: traces are only sent when all three are present.
     langfuse_public_key: str | None = None
