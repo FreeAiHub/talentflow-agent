@@ -1,23 +1,58 @@
+# Local and single-server deployment.
+#
+# `cp .env.example .env` first — Compose reads .env for variable substitution
+# and passes it into the app container. Deploying without it fails immediately,
+# which is preferable to starting with default credentials.
+#
+# For production on one VPS behind Coolify, see docs/DEPLOY.md.
+
 services:
   app:
     build: .
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      TALENTFLOW_DATABASE_URL: "postgresql+psycopg://talentflow:talentflow@db:5432/talentflow"
-      TALENTFLOW_HUMAN_IN_THE_LOOP: "true"
+      # Plain postgresql:// — the application upgrades the driver to asyncpg
+      # itself, so the same URL works for Alembic's offline mode.
+      TALENTFLOW_DATABASE_URL: "postgresql://${POSTGRES_USER:-talentflow}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}@db:5432/${POSTGRES_DB:-talentflow}"
+      # The container is a single worker by design: the scheduler runs in the
+      # process, so a second worker would run a second scheduler.
+      TALENTFLOW_SCHEDULER_ENABLED: "${TALENTFLOW_SCHEDULER_ENABLED:-true}"
     depends_on:
-      - db
+      db:
+        # Wait for Postgres to accept connections, not merely to have started.
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status == 200 else 1)"
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: talentflow
-      POSTGRES_PASSWORD: talentflow
-      POSTGRES_DB: talentflow
+      POSTGRES_USER: "${POSTGRES_USER:-talentflow}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}"
+      POSTGRES_DB: "${POSTGRES_DB:-talentflow}"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Backups land here; see scripts/backup.sh.
+      - ./backups:/backups
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   pgdata:
