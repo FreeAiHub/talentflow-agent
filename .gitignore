@@ -8,3 +8,30 @@ Downloads/
 
 __pycache__/
 *.pyc
+
+# Секреты: config.py читает .env — реальные ключи в git не попадают.
+# .env.example — шаблон без значений, он остаётся под контролем версий.
+.env
+.env.*
+!.env.example
+
+# Виртуальные окружения
+.venv/
+venv/
+
+# Кэши инструментов
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Локальная БД (Settings по умолчанию: sqlite:///./talentflow.db)
+*.db
+*.sqlite3
+
+# Сборка пакета
+dist/
+build/
+*.egg-info/
+
+# macOS
+.DS_Store
