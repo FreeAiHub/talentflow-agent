@@ -76,6 +76,19 @@ class Settings(BaseSettings):
     #: A draft the checker calls ``reject`` must not become sendable.
     grounding_reject_is_fatal: bool = True
 
+    # --- Pipeline ----------------------------------------------------------
+    #: Off by default on purpose: an accidental `uvicorn` in development should
+    #: not start hitting Djinni and spending LLM calls. Deployment turns it on.
+    scheduler_enabled: bool = False
+    scheduler_interval_minutes: int = 30
+    #: Ceilings per run, so one sweep cannot run away with the budget.
+    pipeline_parse_limit: int = 50
+    pipeline_score_limit: int = 50
+    #: Zero keeps drafting out of the automatic run.
+    pipeline_generate_limit: int = 0
+    #: Score at or above which a vacancy is worth pursuing.
+    min_lead_score: float = 0.6
+
     # --- Observability -----------------------------------------------------
     # Optional: traces are only sent when all three are present.
     langfuse_public_key: str | None = None
