@@ -180,13 +180,98 @@ async def create_application(session: AsyncSession, vacancy_id: str, text: str) 
 async def decide_application(
     session: AsyncSession, application_id: int, *, approved: bool
 ) -> ApplicationRow | None:
-    """Approve or reject a pending application. Returns ``None`` if unknown."""
+    """Approve or reject an application. Returns ``None`` if unknown.
+
+    A draft the grounding check rejected cannot be approved: it was stored only
+    so the model's output is not lost, not as a candidate for sending.
+    """
     row = await session.get(ApplicationRow, application_id)
     if row is None:
         return None
+    if row.status == "grounding_failed" and approved:
+        raise ApplicationNotSendable(
+            f"application {row.id} failed the grounding check; it cannot be approved"
+        )
     row.approved = approved
     row.status = "approved" if approved else "rejected"
     row.decided_at = utcnow()
+    await session.commit()
+    return row
+
+
+class ApplicationNotSendable(RuntimeError):
+    """Raised when something tries to send an application a human has not approved."""
+
+
+def assert_sendable(application: ApplicationRow) -> None:
+    """Refuse to send anything that is not explicitly approved.
+
+    This is the human-in-the-loop gate. It lives here rather than in the future
+    sender so that every caller — API, scheduler, bot — passes through the same
+    check instead of each having to remember one.
+    """
+    if not application.approved or application.status != "approved":
+        raise ApplicationNotSendable(
+            f"application {application.id} is {application.status!r}; "
+            "a human must approve it before it can be sent"
+        )
+
+
+async def get_application(session: AsyncSession, application_id: int) -> ApplicationRow | None:
+    """Fetch one application, or ``None``."""
+    return await session.get(ApplicationRow, application_id)
+
+
+async def list_applications(
+    session: AsyncSession, *, status: str | None = None, limit: int = 100
+) -> list[ApplicationRow]:
+    """List applications, newest first, optionally filtered by status."""
+    statement = select(ApplicationRow)
+    if status is not None:
+        statement = statement.where(ApplicationRow.status == status)
+    statement = statement.order_by(ApplicationRow.id.desc()).limit(limit)
+    result = await session.execute(statement)
+    return list(result.scalars().all())
+
+
+async def create_draft_application(
+    session: AsyncSession,
+    vacancy_id: str,
+    text: str,
+    *,
+    sendable: bool = True,
+    auto_approve: bool = False,
+) -> ApplicationRow:
+    """Store a generated draft.
+
+    Three outcomes, in priority order:
+
+    - the grounding check failed -> ``grounding_failed``, never approvable
+    - ``auto_approve`` -> ``approved``, for pipelines running with
+      ``human_in_the_loop`` turned off
+    - otherwise -> ``pending``, waiting for a person
+
+    A rejected draft is stored rather than discarded: losing it would hide what
+    the model produced, and a separate status keeps it from being approved by
+    accident. ``auto_approve`` can never override a failed grounding check.
+    """
+    if not sendable:
+        status = "grounding_failed"
+        approved = False
+    elif auto_approve:
+        status = "approved"
+        approved = True
+    else:
+        status = "pending"
+        approved = False
+
+    row = ApplicationRow(
+        vacancy_id=vacancy_id,
+        text=text,
+        approved=approved,
+        status=status,
+    )
+    session.add(row)
     await session.commit()
     return row
 

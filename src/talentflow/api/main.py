@@ -1,15 +1,23 @@
-"""FastAPI application: REST feed + voice/webhook entrypoints."""
+"""FastAPI application: REST feed, application review, voice/webhook entrypoints."""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Annotated
+from datetime import datetime
+from typing import Annotated, Literal
 
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from talentflow.models import ScoredVacancy
-from talentflow.storage import dispose_engine, get_session
+from talentflow.storage import (
+    ApplicationNotSendable,
+    decide_application,
+    dispose_engine,
+    get_application,
+    get_session,
+    list_applications,
+)
 from talentflow.storage import list_vacancies as repository_list_vacancies
 
 DEFAULT_PAGE_SIZE = 100
@@ -40,6 +48,18 @@ class VapiWebhook(BaseModel):
     payload: dict = Field(default_factory=dict)
 
 
+class ApplicationOut(BaseModel):
+    """A generated draft and its review state."""
+
+    id: int
+    vacancy_id: str
+    text: str
+    approved: bool
+    status: Literal["pending", "approved", "rejected", "grounding_failed"]
+    created_at: datetime
+    decided_at: datetime | None = None
+
+
 @app.get("/health", response_model=Health)
 async def health() -> Health:
     return Health(status="ok", version=app.version)
@@ -62,6 +82,51 @@ async def list_vacancies(
 ) -> list[ScoredVacancy]:
     """Scored vacancies, newest first."""
     return await repository_list_vacancies(session, min_score=min_score, limit=limit, offset=offset)
+
+
+@app.get("/api/v1/applications", response_model=list[ApplicationOut])
+async def list_application_drafts(
+    session: SessionDep,
+    application_status: Annotated[
+        Literal["pending", "approved", "rejected", "grounding_failed"] | None,
+        Query(alias="status", description="Filter by review state."),
+    ] = None,
+    limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = DEFAULT_PAGE_SIZE,
+) -> list[ApplicationOut]:
+    """Outreach drafts awaiting or following review, newest first."""
+    rows = await list_applications(session, status=application_status, limit=limit)
+    return [ApplicationOut.model_validate(row, from_attributes=True) for row in rows]
+
+
+@app.post("/api/v1/applications/{application_id}/approve", response_model=ApplicationOut)
+async def approve_application(application_id: int, session: SessionDep) -> ApplicationOut:
+    """Approve a draft for sending.
+
+    Until this is called the draft stays pending, and the send gate refuses it.
+    """
+    return await _decide(session, application_id, approved=True)
+
+
+@app.post("/api/v1/applications/{application_id}/reject", response_model=ApplicationOut)
+async def reject_application(application_id: int, session: SessionDep) -> ApplicationOut:
+    """Reject a draft so it is never sent."""
+    return await _decide(session, application_id, approved=False)
+
+
+async def _decide(session: AsyncSession, application_id: int, *, approved: bool) -> ApplicationOut:
+    existing = await get_application(session, application_id)
+    if existing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"application {application_id} not found",
+        )
+    try:
+        row = await decide_application(session, application_id, approved=approved)
+    except ApplicationNotSendable as exc:
+        # 409: the request is well-formed, the resource is in the wrong state.
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    assert row is not None  # existence was checked above
+    return ApplicationOut.model_validate(row, from_attributes=True)
 
 
 @app.post("/webhooks/vapi")
