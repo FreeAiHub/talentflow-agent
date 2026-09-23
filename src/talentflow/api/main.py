@@ -9,9 +9,12 @@ from fastapi import Depends, FastAPI, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from talentflow.config import get_settings
 from talentflow.models import ScoredVacancy
+from talentflow.scheduler import get_scheduler, start_scheduler, stop_scheduler
 from talentflow.storage import (
     ApplicationNotSendable,
+    collect_stats,
     decide_application,
     dispose_engine,
     get_application,
@@ -30,9 +33,17 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Release pooled database connections on shutdown."""
-    yield
-    await dispose_engine()
+    """Start the scheduler on boot, release everything on shutdown.
+
+    The scheduler only starts when ``TALENTFLOW_SCHEDULER_ENABLED`` is true, so
+    a development server does not quietly begin collecting and spending.
+    """
+    start_scheduler(get_settings())
+    try:
+        yield
+    finally:
+        stop_scheduler()
+        await dispose_engine()
 
 
 app = FastAPI(title="TalentFlow Agent", version="0.1.0", lifespan=lifespan)
@@ -58,6 +69,38 @@ class ApplicationOut(BaseModel):
     status: Literal["pending", "approved", "rejected", "grounding_failed"]
     created_at: datetime
     decided_at: datetime | None = None
+
+
+class RunOut(BaseModel):
+    """One recorded pipeline stage."""
+
+    id: int
+    kind: str
+    status: str
+    started_at: datetime
+    finished_at: datetime | None = None
+    items_processed: int
+    error: str | None = None
+
+
+class StatsOut(BaseModel):
+    """A snapshot of the pipeline."""
+
+    vacancies_total: int
+    vacancies_scored: int
+    vacancies_above_threshold: int
+    applications_pending: int
+    applications_approved: int
+    applications_grounding_failed: int
+    #: Calls are counted from the ``llm_calls`` table, so failures count too.
+    llm_calls_today: int
+    llm_failures_today: int
+    llm_daily_call_limit: int
+    llm_budget_remaining: int
+    min_lead_score: float
+    #: False means the pipeline only runs when invoked by hand.
+    scheduler_running: bool
+    last_run: RunOut | None = None
 
 
 @app.get("/health", response_model=Health)
@@ -127,6 +170,34 @@ async def _decide(session: AsyncSession, application_id: int, *, approved: bool)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     assert row is not None  # existence was checked above
     return ApplicationOut.model_validate(row, from_attributes=True)
+
+
+@app.get("/api/v1/stats", response_model=StatsOut)
+async def stats(session: SessionDep) -> StatsOut:
+    """What the pipeline has done: totals, review queue, and today's LLM spend."""
+    settings = get_settings()
+    collected = await collect_stats(session, min_score=settings.min_lead_score)
+    scheduler = get_scheduler()
+
+    return StatsOut(
+        vacancies_total=collected.vacancies_total,
+        vacancies_scored=collected.vacancies_scored,
+        vacancies_above_threshold=collected.vacancies_above_threshold,
+        applications_pending=collected.applications_pending,
+        applications_approved=collected.applications_approved,
+        applications_grounding_failed=collected.applications_grounding_failed,
+        llm_calls_today=collected.llm_calls_today,
+        llm_failures_today=collected.llm_failures_today,
+        llm_daily_call_limit=settings.llm_daily_call_limit,
+        llm_budget_remaining=max(0, settings.llm_daily_call_limit - collected.llm_calls_today),
+        min_lead_score=settings.min_lead_score,
+        scheduler_running=scheduler is not None,
+        last_run=(
+            RunOut.model_validate(collected.last_run, from_attributes=True)
+            if collected.last_run
+            else None
+        ),
+    )
 
 
 @app.post("/webhooks/vapi")

@@ -18,7 +18,9 @@ from talentflow.storage.db import (
 )
 from talentflow.storage.repository import (
     ApplicationNotSendable,
+    PipelineStats,
     assert_sendable,
+    collect_stats,
     count_vacancies,
     create_application,
     create_draft_application,
@@ -35,7 +37,9 @@ from talentflow.storage.repository import (
 
 __all__ = [
     "ApplicationNotSendable",
+    "PipelineStats",
     "assert_sendable",
+    "collect_stats",
     "count_vacancies",
     "create_application",
     "create_draft_application",
