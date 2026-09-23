@@ -74,7 +74,8 @@ Telegram Bot API бесплатен. Это единственный канал,
 Точные цены Cal.com и Calendly в этом отчёте не приводятся — не проверены
 `[не проверено]`.
 
-Что известно по подходу: Cal.com можно поднять self-hosted, и это совпадает с
+Что известно по подходу (без внешнего источника, из документации проектов):
+Cal.com можно поднять self-hosted, и это совпадает с
 общей линией проекта (Coolify self-hosted, Langfuse self-hosted). Для MVP
 планирование встреч вообще не нужно: сквозной сценарий заканчивается
 одобренным откликом, а не назначенной встречей.
@@ -199,7 +200,6 @@ n8n добавляет: отдельный сервис на сервере, с�
 
 - [Instantly Plans Overview](https://help.instantly.ai/en/articles/10273259-instantly-plans-overview) — тарифы, лимиты, цены доменов и ящиков. Обновлено 17.07.2026
 - [Vapi Pricing](https://vapi.ai/pricing) — страница существует, цифры не подтверждены
-- [Cal.com vs Calendly](https://contabo.com/blog/calcom-vs-calendly/) — обзор вариантов self-hosted
 
 ---
 
