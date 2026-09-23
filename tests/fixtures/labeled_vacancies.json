@@ -1,0 +1,182 @@
+{
+  "_meta": {
+    "purpose": "Ground truth для оценки качества скоринга вакансий (День 5).",
+    "source": "tests/fixtures/djinni_jobs_page1.html — реальные вакансии Djinni, снято 23.09.2026",
+    "count": 15,
+    "planned_count": 30,
+    "why_fewer": "В записанной странице 15 вакансий. Больше без живого прогона взять неоткуда: страница пагинации не сохранялась.",
+    "labeled_by": "агент, ПРЕДВАРИТЕЛЬНО",
+    "requires_human_confirmation": true,
+    "bias_warning": "Разметку сделал тот же агент, который писал промпт скоринга. По методике из docs/research/2026-09-23-evals-method.md это смещение в пользу автора промпта: метрика будет измерять согласие с собой, а не объективную релевантность. Перед использованием в решении разметку должен подтвердить или переделать человек.",
+    "rubric": "Релевантна = вакансию можно закрыть нашими инженерами. Учитывалось: направление (разработка, QA, DevOps, данные, управление проектами), уровень (middle и выше), признак прямого работодателя. ICP в настройках — заготовка, поэтому рубрика тоже предварительная.",
+    "not_used_for_labeling": "Описание вакансии читалось, но ответы модели скоринга НЕ смотрелись — иначе разметка подстроилась бы под модель.",
+    "instruction": "Перед прогоном evals: подтвердить или переписать поле relevant, убрать requires_human_confirmation, обновить labeled_by."
+  },
+  "vacancies": [
+    {
+      "id": "849879",
+      "title": "QA Engineer",
+      "company": "Mantah",
+      "category": "QA",
+      "months_of_experience": 36.0,
+      "employment_type": "FULL_TIME",
+      "country": "Ukraine",
+      "relevant": true,
+      "note": "QA, 3 года опыта — уровень middle и выше, наша услуга"
+    },
+    {
+      "id": "846422",
+      "title": "Junior Account Manager",
+      "company": "Solidgate",
+      "category": "Account Manager",
+      "months_of_experience": null,
+      "employment_type": "FULL_TIME",
+      "country": "Ukraine",
+      "relevant": false,
+      "note": "Не инженерная роль, к тому же junior"
+    },
+    {
+      "id": "846420",
+      "title": "Junior Business Analyst (Account Management and Sales team)",
+      "company": "Solidgate",
+      "category": "Business Analyst",
+      "months_of_experience": null,
+      "employment_type": "FULL_TIME",
+      "country": "Ukraine",
+      "relevant": false,
+      "note": "Business Analyst близко к управлению проектами, но junior ниже нашего порога"
+    },
+    {
+      "id": "842409",
+      "title": "Head of VIP",
+      "company": "Add Talent Solutions",
+      "category": "Head Chief",
+      "months_of_experience": 24.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": false,
+      "note": "Не IT-доставка; название компании указывает на агентство"
+    },
+    {
+      "id": "849877",
+      "title": "Partnership Development Manager (Poland)",
+      "company": "FRACTAL",
+      "category": "Business Development",
+      "months_of_experience": 6.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": false,
+      "note": "Продажи и партнёрства, не инженерия"
+    },
+    {
+      "id": "849876",
+      "title": "Middle Python Developer in Hosting Services",
+      "company": "ZONE3000",
+      "category": "Python",
+      "months_of_experience": 48.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": true,
+      "note": "Python, 4 года опыта — точно наша услуга и уровень"
+    },
+    {
+      "id": "849872",
+      "title": "Product Owner",
+      "company": "Atlas Technica",
+      "category": "Product Owner",
+      "months_of_experience": 60.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": true,
+      "note": "Управление проектами входит в ICP, 5 лет опыта. СПОРНО: Product Owner — продуктовая роль, а не управление проектами; при уточнении ICP метка может измениться"
+    },
+    {
+      "id": "849871",
+      "title": "CRM Manager",
+      "company": "AzuraInfinity",
+      "category": "Content Manager",
+      "months_of_experience": 36.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": false,
+      "note": "Администрирование CRM, не разработка"
+    },
+    {
+      "id": "849869",
+      "title": "DevOps/Backend Engineer",
+      "company": "NearPrime",
+      "category": "DevOps",
+      "months_of_experience": 60.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": true,
+      "note": "DevOps, 5 лет — наша услуга, senior"
+    },
+    {
+      "id": "849868",
+      "title": "Affiliate Manager",
+      "company": "AzuraInfinity",
+      "category": "Affiliate Manager",
+      "months_of_experience": 36.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": false,
+      "note": "Маркетинг, не инженерия"
+    },
+    {
+      "id": "849865",
+      "title": "Senior Affiliate Manager",
+      "company": "AzuraInfinity",
+      "category": "Affiliate Manager",
+      "months_of_experience": 36.0,
+      "employment_type": "FULL_TIME",
+      "country": "Poland",
+      "relevant": false,
+      "note": "Маркетинг, не инженерия"
+    },
+    {
+      "id": "849863",
+      "title": "Content Writer / Content Manager (Freelance)",
+      "company": "Ekreative",
+      "category": "Content Manager",
+      "months_of_experience": 24.0,
+      "employment_type": "PART_TIME",
+      "country": null,
+      "relevant": false,
+      "note": "Контент, частичная занятость"
+    },
+    {
+      "id": "849862",
+      "title": "Head of Influencer Marketing",
+      "company": "Real Estate Bees",
+      "category": "Affiliate Manager",
+      "months_of_experience": 24.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": false,
+      "note": "Маркетинг"
+    },
+    {
+      "id": "849860",
+      "title": "Middle Business Analyst",
+      "company": "Langate",
+      "category": "Business Analyst",
+      "months_of_experience": 36.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": true,
+      "note": "Business Analyst, 3 года — middle, близко к управлению проектами"
+    },
+    {
+      "id": "825631",
+      "title": "Payment Officer",
+      "company": "TrueGroup",
+      "category": "Finance Manager",
+      "months_of_experience": 12.0,
+      "employment_type": "FULL_TIME",
+      "country": null,
+      "relevant": false,
+      "note": "Финансовые операции, не инженерия"
+    }
+  ]
+}
