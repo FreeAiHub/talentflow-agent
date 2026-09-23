@@ -8,16 +8,20 @@ Callers work with :class:`~talentflow.models.Vacancy` and
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from talentflow.models import ScoredVacancy, Vacancy
 from talentflow.storage.tables import (
     ApplicationRow,
+    LlmCallRow,
     RunRow,
     ScoredVacancyRow,
     VacancyRow,
+    start_of_utc_day,
     utcnow,
 )
 
@@ -302,3 +306,72 @@ async def finish_run(
     row.finished_at = utcnow()
     await session.commit()
     return row
+
+
+@dataclass
+class PipelineStats:
+    """A snapshot of the pipeline, for the /stats endpoint."""
+
+    vacancies_total: int = 0
+    vacancies_scored: int = 0
+    vacancies_above_threshold: int = 0
+    applications_pending: int = 0
+    applications_approved: int = 0
+    applications_grounding_failed: int = 0
+    llm_calls_today: int = 0
+    llm_failures_today: int = 0
+    last_run: RunRow | None = None
+
+    @property
+    def last_run_status(self) -> str | None:
+        return self.last_run.status if self.last_run else None
+
+
+async def collect_stats(session: AsyncSession, *, min_score: float) -> PipelineStats:
+    """Gather the numbers the /stats endpoint reports.
+
+    Counted with separate queries rather than one clever join: the numbers come
+    from four tables with different shapes, and a wrong dashboard is worse than
+    four cheap round trips.
+    """
+    scored = select(func.count(func.distinct(ScoredVacancyRow.vacancy_id))).select_from(
+        ScoredVacancyRow
+    )
+    above = (
+        select(func.count(func.distinct(ScoredVacancyRow.vacancy_id)))
+        .select_from(ScoredVacancyRow)
+        .where(ScoredVacancyRow.score >= min_score)
+    )
+
+    async def count(statement: Select[Any]) -> int:
+        result = await session.execute(statement)
+        return int(result.scalar_one())
+
+    async def count_applications(status: str) -> int:
+        return await count(
+            select(func.count()).select_from(ApplicationRow).where(ApplicationRow.status == status)
+        )
+
+    today = start_of_utc_day()
+    calls_today = await count(
+        select(func.count()).select_from(LlmCallRow).where(LlmCallRow.called_at >= today)
+    )
+    failures_today = await count(
+        select(func.count())
+        .select_from(LlmCallRow)
+        .where(LlmCallRow.called_at >= today, LlmCallRow.ok.is_(False))
+    )
+
+    latest = await session.execute(select(RunRow).order_by(RunRow.id.desc()).limit(1))
+
+    return PipelineStats(
+        vacancies_total=await count(select(func.count()).select_from(VacancyRow)),
+        vacancies_scored=await count(scored),
+        vacancies_above_threshold=await count(above),
+        applications_pending=await count_applications("pending"),
+        applications_approved=await count_applications("approved"),
+        applications_grounding_failed=await count_applications("grounding_failed"),
+        llm_calls_today=calls_today,
+        llm_failures_today=failures_today,
+        last_run=latest.scalar_one_or_none(),
+    )

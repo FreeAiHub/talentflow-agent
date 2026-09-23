@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from talentflow.config import Settings, get_settings
 from talentflow.llm.client import Completer, extract_json
-from talentflow.llm.errors import LlmError
+from talentflow.llm.errors import LlmBudgetExceeded, LlmError, NoProviderConfigured
 from talentflow.llm.prompts import render_prompt
 from talentflow.models import ScoredVacancy, Vacancy
 
@@ -137,25 +137,33 @@ class QualityScorer:
     async def score_many(self, vacancies: Sequence[Vacancy]) -> list[ScoreOutcome]:
         """Score several vacancies, skipping the ones that cannot be scored.
 
-        One unusable answer must not abandon the batch; unreachable providers,
-        however, are not swallowed — if nothing can be scored the error
-        propagates, because a run that scored nothing is a failure, not a
-        partial success.
+        One unusable answer must not abandon the batch. A missing key or an
+        exhausted budget, however, is not a per-vacancy problem: those stop the
+        batch at once and keep their own exception type, so the caller can tell
+        "nothing to spend" from "provider is broken".
         """
         outcomes: list[ScoreOutcome] = []
-        failures: list[str] = []
+        errors: list[LlmError] = []
 
         for vacancy in vacancies:
             try:
                 outcomes.append(await self.score(vacancy))
+            except (LlmBudgetExceeded, NoProviderConfigured):
+                # Not a per-vacancy problem: every remaining one fails the same
+                # way, so stop rather than repeating the same error N times.
+                raise
             except LlmError as exc:
-                failures.append(f"{vacancy.id}: {exc}")
+                errors.append(exc)
                 logger.warning("Skipping vacancy %s: %s", vacancy.id, exc)
 
-        if failures and not outcomes:
-            raise LlmError("no vacancy could be scored — " + "; ".join(failures[:5]))
-        if failures:
-            logger.warning("%d of %d vacancies failed to score", len(failures), len(vacancies))
+        if errors and not outcomes:
+            # Re-raise as the original type: the pipeline separates "nothing to
+            # spend" from "provider is down", and a bare LlmError erases that.
+            first = errors[0]
+            detail = "; ".join(str(e) for e in errors[:5])
+            raise type(first)(f"no vacancy could be scored — {detail}") from first
+        if errors:
+            logger.warning("%d of %d vacancies failed to score", len(errors), len(vacancies))
 
         return outcomes
 

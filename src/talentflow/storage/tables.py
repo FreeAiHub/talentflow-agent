@@ -35,6 +35,17 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+def start_of_utc_day(now: datetime | None = None) -> datetime:
+    """Midnight UTC of the day ``now`` falls in.
+
+    Lives here rather than beside the LLM budget: it is a time utility, and
+    putting it in the LLM layer made storage import the LLM layer, which made
+    the LLM layer import storage, which is a cycle.
+    """
+    moment = now or datetime.now(UTC)
+    return moment.astimezone(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+
+
 class UTCDateTime(TypeDecorator[datetime]):
     """A datetime that always reads back as timezone-aware UTC.
 
