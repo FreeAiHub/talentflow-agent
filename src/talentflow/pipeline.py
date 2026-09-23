@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from talentflow.config import Settings, get_settings
 from talentflow.llm.client import LLMClient
 from talentflow.llm.errors import LlmBudgetExceeded, LlmError, NoProviderConfigured
+from talentflow.notifiers import TelegramError, TelegramNotConfigured, TelegramNotifier, format_lead
 from talentflow.parsers.djinni import DjinniParser
 from talentflow.scorers import QualityScorer
 from talentflow.storage import (
@@ -32,8 +33,11 @@ from talentflow.storage import (
     create_engine,
     create_sessionmaker,
     finish_run,
+    get_vacancy,
     list_applications,
+    list_unnotified_applications,
     list_vacancies,
+    mark_notified,
     save_score,
     save_vacancies,
     start_run,
@@ -82,6 +86,10 @@ class PipelineResult:
     def drafted(self) -> int:
         return sum(s.items for s in self.stages if s.stage == "generate")
 
+    @property
+    def notified(self) -> int:
+        return sum(s.items for s in self.stages if s.stage == "notify")
+
     def summary(self) -> str:
         parts = [
             f"{stage.stage}={stage.status}" + (f"({stage.items})" if stage.status == "ok" else "")
@@ -113,13 +121,13 @@ async def _recorded(
         await finish_run(session, run.id, status="skipped", error=str(exc))
         logger.warning("Stage %s skipped: %s", kind, exc)
         return StageResult(kind, "skipped", error=str(exc), duration_ms=elapsed())
-    except NoProviderConfigured as exc:
-        # Also expected while no key is configured, and it would repeat on every
-        # run — recorded as a skip with the reason attached.
+    except (NoProviderConfigured, TelegramNotConfigured) as exc:
+        # Also expected while a credential is missing, and it would repeat on
+        # every run — recorded as a skip with the reason attached.
         await finish_run(session, run.id, status="skipped", error=str(exc))
         logger.warning("Stage %s skipped: %s", kind, exc)
         return StageResult(kind, "skipped", error=str(exc), duration_ms=elapsed())
-    except LlmError as exc:
+    except (LlmError, TelegramError) as exc:
         await finish_run(session, run.id, status="failed", error=str(exc))
         logger.error("Stage %s failed: %s", kind, exc)
         return StageResult(kind, "failed", error=str(exc), duration_ms=elapsed())
@@ -202,6 +210,51 @@ async def run_generate(
     return drafted
 
 
+async def run_notify(session: AsyncSession, settings: Settings, *, limit: int = 20) -> int:
+    """Tell the reviewer about pending drafts they have not seen yet.
+
+    A draft is marked notified only after the message is actually sent, so a
+    failed send is retried on the next run rather than silently dropped.
+    """
+    notifier = TelegramNotifier(settings)
+    if not notifier.enabled:
+        raise TelegramNotConfigured(
+            "Telegram is not configured: set TALENTFLOW_TELEGRAM_BOT_TOKEN "
+            "and TALENTFLOW_TELEGRAM_CHAT_ID"
+        )
+
+    pending = await list_unnotified_applications(session, limit=limit)
+    sent = 0
+    for application in pending:
+        vacancy = await get_vacancy(session, application.vacancy_id)
+        if vacancy is None:
+            logger.warning(
+                "Application %d references missing vacancy %s",
+                application.id,
+                application.vacancy_id,
+            )
+            continue
+
+        notification = format_lead(
+            application_id=application.id,
+            title=vacancy.title,
+            company=vacancy.company,
+            score=vacancy.score,
+            reasons=vacancy.reasons,
+            url=str(vacancy.url) if vacancy.url else None,
+            draft=application.text,
+        )
+        try:
+            await notifier.send_lead(notification)
+        except TelegramError as exc:
+            logger.warning("Could not notify about application %d: %s", application.id, exc)
+            continue
+
+        await mark_notified(session, application.id)
+        sent += 1
+    return sent
+
+
 async def run_pipeline(
     session: AsyncSession,
     *,
@@ -229,6 +282,8 @@ async def run_pipeline(
                 lambda: run_generate(session, settings, limit=generate_limit),
             )
         )
+
+    result.stages.append(await _recorded(session, "notify", lambda: run_notify(session, settings)))
 
     logger.info("Pipeline finished: %s", result.summary())
     return result
