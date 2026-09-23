@@ -35,16 +35,16 @@ cd talentflow-agent
 ### 2. Настройте окружение
 
 ```bash
-# Создайте виртуальное окружение
-python -m venv venv
-source venv/bin/activate  # На Windows: venv\Scripts\activate
+# Создайте .venv и установите зависимости (включая dev: pytest, ruff, mypy)
+uv sync
 
-# Установите зависимости
-pip install -r requirements.txt
+# Скопируйте .env и заполните ключи
+cp .env.example .env
+```
 
-# Установите pre-commit hooks
-pip install pre-commit
-pre-commit install
+Команды запускайте через `uv run ...` — активировать окружение не нужно.
+Проект использует [uv](https://docs.astral.sh/uv/), зависимости зафиксированы
+в `uv.lock`.
 ```
 
 ### 3. Создайте ветку для работы
@@ -131,20 +131,17 @@ class CandidateProcessor:
 
 ### Форматирование
 
-Используйте инструменты автоформатирования:
+Используйте **Ruff** — он заменяет Black, isort и flake8 сразу:
 
 ```bash
-# Black для форматирования
-black src/ tests/
+# Форматирование
+uv run ruff format .
 
-# isort для сортировки импортов
-isort src/ tests/
+# Линтинг (с --fix для автоисправлений)
+uv run ruff check .
 
-# flake8 для проверки стиля
-flake8 src/ tests/
-
-# mypy для проверки типов
-mypy src/
+# Проверка типов
+uv run mypy
 ```
 
 ## 🧪 Тестирование

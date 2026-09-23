@@ -145,19 +145,30 @@ git push origin feature/amazing-feature
 
 ### Python
 
-#### Форматирование
+#### Форматирование и линтинг
 
-Мы используем **Black** и **isort**:
+Мы используем **Ruff** — он заменяет Black, isort и flake8 сразу. Настройки
+живут в `pyproject.toml`, отдельные конфиги не нужны.
 
 ```bash
 # Форматирование
-black src/ tests/
-isort src/ tests/
+uv run ruff format .
 
-# Проверка
-flake8 src/ tests/
-mypy src/
+# Проверка форматирования без правок (то же гоняет CI)
+uv run ruff format --check .
+
+# Линтинг
+uv run ruff check .
+
+# Линтинг с автоисправлением того, что исправимо
+uv run ruff check --fix .
+
+# Типы
+uv run mypy
 ```
+
+Все четыре команды должны проходить до коммита — ровно их запускает
+`.github/workflows/ci.yml`.
 
 #### Type Hints
 
