@@ -18,6 +18,11 @@ dependencies = [
 # PEP 735 dev group: installed by `uv sync` automatically (no --extra needed).
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.7", "mypy>=1.13"]
 
+[project.optional-dependencies]
+# LLM tracing is opt-in: the llm_calls table and structured logs already cover
+# most needs, and this avoids running another service for everyone.
+observability = ["langfuse>=3"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -50,6 +55,12 @@ select = [
 testpaths = ["tests"]
 # The parsers and API clients are async; tests are plain `async def`.
 asyncio_mode = "auto"
+
+# langfuse is an optional extra (`uv sync --extra observability`); type
+# checking must not require it to be installed.
+[[tool.mypy.overrides]]
+module = ["langfuse", "langfuse.*"]
+ignore_missing_imports = true
 
 [tool.mypy]
 python_version = "3.11"
