@@ -24,15 +24,20 @@ OAuth-согласие) — до его подключения шаблоны п
 
 | Файл | Роль | Модель |
 |------|------|--------|
-| [`01-architect.md`](./01-architect.md) | Развилки стека, ADR, схемы данных | `openai/gpt-6-astra` |
-| [`02-builder.md`](./02-builder.md) | Реализация задач дня | `anthropic/claude-fable-5.1` |
-| [`03-verifier.md`](./03-verifier.md) | Независимая проверка DoD | `openai/gpt-6-astra` |
-| [`04-researcher.md`](./04-researcher.md) | Факты и цены со ссылками | `google/gemini-3.8-flash` |
-| [`05-analyst.md`](./05-analyst.md) | Сравнение вариантов, инфраструктура | `qwen/qwen3.8-max-0902` |
-| [`06-bulk-editor.md`](./06-bulk-editor.md) | Механические правки по репозиторию | `z-ai/glm-5.3` |
-| [`07-routine.md`](./07-routine.md) | Тесты по шаблону, docstrings, типы | `deepseek/deepseek-v4-flash-0731` |
+| [`01-architect.md`](./01-architect.md) | Развилки стека, ADR, схемы данных | `deepseek/deepseek-v4.1-flash` |
+| [`02-builder.md`](./02-builder.md) | Реализация задач дня | `deepseek/deepseek-v4-flash` |
+| [`03-verifier.md`](./03-verifier.md) | Независимая проверка DoD | `deepseek/deepseek-v4.1-flash` |
+| [`04-researcher.md`](./04-researcher.md) | Факты и цены со ссылками | `xiaomi/mimo-v2.5` |
+| [`05-analyst.md`](./05-analyst.md) | Сравнение вариантов, инфраструктура | `qwen/qwen3.8-flash` |
+| [`06-bulk-editor.md`](./06-bulk-editor.md) | Механические правки по репозиторию | `deepseek/deepseek-v4-flash` |
+| [`07-routine.md`](./07-routine.md) | Тесты по шаблону, docstrings, типы | `deepseek/deepseek-v4-flash` |
 
-Полные описания ролей — в [`docs/AGENT-ROSTER.md`](../../docs/AGENT-ROSTER.md).
+Полные описания ролей — в [`docs/AGENT-ROSTER.md`](../../docs/AGENT-ROSTER.md),
+правило выбора модели — в [`docs/MODEL-ROTATION.md`](../../docs/MODEL-ROTATION.md).
+
+> **Модели в таблице — самая дешёвая ступень, которая справляется.** Дорогая
+> берётся только при зафиксированном провале дешёвой: замер 23.09.2026 показал,
+> что 98% расхода дали две самые дорогие модели при неиспользованном потолке.
 
 ---
 
