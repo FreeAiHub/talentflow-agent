@@ -74,21 +74,28 @@ git remote add upstream https://github.com/FreeAiHub/talentflow-agent.git
 
 ### 2. Настройте окружение
 
+Проект использует [uv](https://docs.astral.sh/uv/) — один инструмент вместо
+`venv` + `pip`. Зависимости зафиксированы в `uv.lock`.
+
 ```bash
-# Создайте виртуальное окружение
-python -m venv venv
-source venv/bin/activate  # На Windows: venv\Scripts\activate
+# Установите uv (один раз): https://docs.astral.sh/uv/getting-started/installation/
 
-# Установите зависимости
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
+# Создайте .venv и установите проект вместе с dev-зависимостями (pytest, ruff, mypy)
+uv sync
 
-# Установите pre-commit hooks
-pre-commit install
-
-# Скопируйте .env
+# Скопируйте .env — все переменные с префиксом TALENTFLOW_, см. src/talentflow/config.py
 cp .env.example .env
-# Отредактируйте .env с вашими API ключами
+# Отредактируйте .env с вашими API ключами (.env в git не попадает)
+```
+
+Команды запускайте через `uv run ...` — активировать окружение вручную не нужно.
+Перед коммитом прогоните то же, что запускает CI (`.github/workflows/ci.yml`):
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest -q
+uv run mypy
 ```
 
 ### 3. Создайте ветку
@@ -138,19 +145,30 @@ git push origin feature/amazing-feature
 
 ### Python
 
-#### Форматирование
+#### Форматирование и линтинг
 
-Мы используем **Black** и **isort**:
+Мы используем **Ruff** — он заменяет Black, isort и flake8 сразу. Настройки
+живут в `pyproject.toml`, отдельные конфиги не нужны.
 
 ```bash
 # Форматирование
-black src/ tests/
-isort src/ tests/
+uv run ruff format .
 
-# Проверка
-flake8 src/ tests/
-mypy src/
+# Проверка форматирования без правок (то же гоняет CI)
+uv run ruff format --check .
+
+# Линтинг
+uv run ruff check .
+
+# Линтинг с автоисправлением того, что исправимо
+uv run ruff check --fix .
+
+# Типы
+uv run mypy
 ```
+
+Все четыре команды должны проходить до коммита — ровно их запускает
+`.github/workflows/ci.yml`.
 
 #### Type Hints
 
@@ -346,24 +364,17 @@ Closes #123"
 
 ### Запуск тестов
 
+Тесты лежат в `tests/` (настроено через `[tool.pytest.ini_options]` в `pyproject.toml`).
+
 ```bash
 # Все тесты
-pytest
-
-# С coverage
-pytest --cov=src --cov-report=html
-
-# Только unit тесты
-pytest tests/unit/
-
-# Только integration тесты
-pytest tests/integration/
+uv run pytest
 
 # Конкретный файл
-pytest tests/unit/test_parsers.py
+uv run pytest tests/test_health.py
 
 # С verbose
-pytest -v
+uv run pytest -v
 ```
 
 ### Написание тестов

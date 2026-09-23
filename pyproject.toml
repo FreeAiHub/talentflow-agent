@@ -11,8 +11,9 @@ dependencies = [
     "httpx>=0.27",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.7"]
+[dependency-groups]
+# PEP 735 dev group: installed by `uv sync` automatically (no --extra needed).
+dev = ["pytest>=8", "ruff>=0.7", "mypy>=1.13"]
 
 [build-system]
 requires = ["hatchling"]
@@ -20,3 +21,34 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/talentflow"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+# Ruff >= 0.16 lints/formats Python blocks inside *.md by default. Docs are
+# prose, not code under test — keep the linter on real Python sources only.
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+# examples/ is an illustrative mock (imports a non-existent module), not
+# maintained as production code. Bring it under lint when it becomes runnable.
+extend-exclude = ["examples"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src", "tests"]
+check_untyped_defs = true
+warn_unused_ignores = true
+

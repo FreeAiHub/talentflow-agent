@@ -6,9 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="TALENTFLOW_", env_file=".env", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_prefix="TALENTFLOW_", env_file=".env", extra="ignore")
 
     database_url: str = "sqlite:///./talentflow.db"
     openai_api_key: str | None = None
