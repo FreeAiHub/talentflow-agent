@@ -136,7 +136,7 @@ async def test_parse_stage_records_a_run(
     await run_pipeline(session, settings=settings_with())
 
     runs = await runs_recorded(session)
-    assert [r.kind for r in runs] == ["parse", "score"]
+    assert [r.kind for r in runs] == ["parse", "score", "notify"]
     parse_run = runs[0]
     assert parse_run.status == "ok"
     assert parse_run.items_processed == 1
@@ -202,7 +202,7 @@ async def test_generate_stage_is_absent_from_the_run_by_default(
 
     result = await run_pipeline(session, settings=settings_with())
 
-    assert [s.stage for s in result.stages] == ["parse", "score"]
+    assert [s.stage for s in result.stages] == ["parse", "score", "notify"]
 
 
 async def test_generate_stage_is_included_when_configured(
@@ -214,7 +214,7 @@ async def test_generate_stage_is_included_when_configured(
 
     result = await run_pipeline(session, settings=settings)
 
-    assert [s.stage for s in result.stages] == ["parse", "score", "generate"]
+    assert [s.stage for s in result.stages] == ["parse", "score", "generate", "notify"]
 
 
 # --- idempotency -----------------------------------------------------------
@@ -245,7 +245,7 @@ async def test_every_run_is_recorded_even_when_it_did_nothing(
     await run_pipeline(session, settings=settings_with())
 
     runs = await runs_recorded(session)
-    assert len(runs) == 4  # two runs, two stages each
+    assert len(runs) == 6  # two runs, three stages each
 
 
 # --- failure isolation -----------------------------------------------------
@@ -360,7 +360,8 @@ async def test_stats_shows_the_last_run(
     body = (await api_client.get("/api/v1/stats")).json()
 
     assert body["last_run"] is not None
-    assert body["last_run"]["kind"] == "score"
+    assert body["last_run"]["kind"] == "notify"
+    # No Telegram token in these settings, so notifying is skipped with a reason.
     assert body["last_run"]["status"] == "skipped"
 
 

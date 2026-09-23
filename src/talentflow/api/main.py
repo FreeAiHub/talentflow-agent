@@ -5,15 +5,17 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Annotated, Literal
 
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from talentflow.config import get_settings
 from talentflow.models import ScoredVacancy
+from talentflow.notifiers import APPROVE, TelegramNotifier, parse_callback
 from talentflow.scheduler import get_scheduler, start_scheduler, stop_scheduler
 from talentflow.storage import (
     ApplicationNotSendable,
+    claim_telegram_update,
     collect_stats,
     decide_application,
     dispose_engine,
@@ -29,6 +31,14 @@ MAX_PAGE_SIZE = 500
 # Annotated rather than a default value: FastAPI reads it the same way, and the
 # dependency stays out of the signature defaults.
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
+
+
+def get_notifier() -> TelegramNotifier:
+    """Notification channel. Overridden in tests so nothing hits the network."""
+    return TelegramNotifier()
+
+
+NotifierDep = Annotated[TelegramNotifier, Depends(get_notifier)]
 
 
 @asynccontextmanager
@@ -198,6 +208,66 @@ async def stats(session: SessionDep) -> StatsOut:
             else None
         ),
     )
+
+
+class TelegramCallbackQuery(BaseModel):
+    id: str
+    data: str | None = None
+
+
+class TelegramUpdate(BaseModel):
+    """The subset of a Telegram update this service acts on."""
+
+    update_id: int
+    callback_query: TelegramCallbackQuery | None = None
+
+
+@app.post("/webhooks/telegram")
+async def telegram_webhook(
+    update: TelegramUpdate,
+    session: SessionDep,
+    notifier: NotifierDep,
+    secret: Annotated[str | None, Header(alias="X-Telegram-Bot-Api-Secret-Token")] = None,
+) -> dict:
+    """Handle a button press from a lead notification.
+
+    Refuses anything without the shared secret: an unauthenticated POST could
+    otherwise approve drafts on the reviewer's behalf. Deliveries are
+    deduplicated by update id, because a replayed approval arriving after a
+    newer rejection would silently reverse it.
+    """
+    if not notifier.verify_secret(secret):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="invalid webhook secret")
+
+    if update.callback_query is None:
+        # Edits, joins and the rest are not our business.
+        return {"ok": True, "handled": False}
+
+    parsed = parse_callback(update.callback_query.data)
+    if parsed is None:
+        return {"ok": True, "handled": False, "reason": "unrecognised callback data"}
+
+    action, application_id = parsed
+    if not await claim_telegram_update(session, update.update_id, action=action):
+        return {"ok": True, "handled": False, "reason": "duplicate update"}
+
+    approved = action == APPROVE
+    try:
+        application = await _decide(session, application_id, approved=approved)
+    except HTTPException as exc:
+        # A refusal is a normal outcome here: report it in the chat rather than
+        # failing the webhook and having Telegram retry a decision forever.
+        await notifier.answer_callback(update.callback_query.id, str(exc.detail))
+        return {"ok": True, "handled": True, "result": "refused", "reason": exc.detail}
+
+    verdict = "утверждён" if approved else "отклонён"
+    await notifier.answer_callback(update.callback_query.id, f"Отклик {verdict}")
+    return {
+        "ok": True,
+        "handled": True,
+        "result": application.status,
+        "application_id": application.id,
+    }
 
 
 @app.post("/webhooks/vapi")

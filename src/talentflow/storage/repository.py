@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from sqlalchemy import Select, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from talentflow.models import ScoredVacancy, Vacancy
@@ -20,6 +21,7 @@ from talentflow.storage.tables import (
     LlmCallRow,
     RunRow,
     ScoredVacancyRow,
+    TelegramUpdateRow,
     VacancyRow,
     start_of_utc_day,
     utcnow,
@@ -375,3 +377,49 @@ async def collect_stats(session: AsyncSession, *, min_score: float) -> PipelineS
         llm_failures_today=failures_today,
         last_run=latest.scalar_one_or_none(),
     )
+
+
+async def claim_telegram_update(session: AsyncSession, update_id: int, *, action: str = "") -> bool:
+    """Record a webhook update id; return ``False`` if it was already handled.
+
+    Telegram retries deliveries. Without this, a replay of an old "approve"
+    arriving after a newer "reject" would silently reverse the decision. The
+    primary key does the work, so two concurrent deliveries cannot both win.
+    """
+    if await session.get(TelegramUpdateRow, update_id) is not None:
+        return False
+
+    session.add(TelegramUpdateRow(update_id=update_id, action=action))
+    try:
+        await session.commit()
+    except IntegrityError:
+        # A concurrent delivery inserted the same id first.
+        await session.rollback()
+        return False
+    return True
+
+
+async def list_unnotified_applications(
+    session: AsyncSession, *, limit: int = 20
+) -> list[ApplicationRow]:
+    """Pending drafts the reviewer has not been told about yet."""
+    statement = (
+        select(ApplicationRow)
+        .where(
+            ApplicationRow.status == "pending",
+            ApplicationRow.notified_at.is_(None),
+        )
+        .order_by(ApplicationRow.id)
+        .limit(limit)
+    )
+    result = await session.execute(statement)
+    return list(result.scalars().all())
+
+
+async def mark_notified(session: AsyncSession, application_id: int) -> None:
+    """Record that the reviewer has been told about this draft."""
+    row = await session.get(ApplicationRow, application_id)
+    if row is None:
+        return
+    row.notified_at = utcnow()
+    await session.commit()

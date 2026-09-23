@@ -89,6 +89,17 @@ class Settings(BaseSettings):
     #: Score at or above which a vacancy is worth pursuing.
     min_lead_score: float = 0.6
 
+    # --- Notifications -----------------------------------------------------
+    #: Telegram is the notification channel: free, and where the target market
+    #: already lives. Absent token means notifications are simply not sent.
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
+    #: Sent back by Telegram in ``X-Telegram-Bot-Api-Secret-Token``. Without it
+    #: the webhook is refused, so a stranger cannot approve drafts by posting.
+    telegram_webhook_secret: str | None = None
+    #: Ceiling on outgoing messages, to stay well clear of Telegram's limits.
+    telegram_max_messages_per_minute: int = 20
+
     # --- Observability -----------------------------------------------------
     # Optional: traces are only sent when all three are present.
     langfuse_public_key: str | None = None
@@ -100,6 +111,11 @@ class Settings(BaseSettings):
         """Primary model followed by fallbacks, in order, without blanks."""
         parts = [*self.llm_models.split(","), *self.llm_fallback_models.split(",")]
         return [part.strip() for part in parts if part.strip()]
+
+    @property
+    def telegram_enabled(self) -> bool:
+        """Notifications need a token and somewhere to send them."""
+        return bool(self.telegram_bot_token and self.telegram_chat_id)
 
     @property
     def langfuse_enabled(self) -> bool:

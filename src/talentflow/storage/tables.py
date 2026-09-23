@@ -147,6 +147,9 @@ class ApplicationRow(Base):
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False, default=utcnow)
     decided_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    #: Set once the reviewer has been told about this draft. Without it the
+    #: notify stage would re-send every pending draft on every run.
+    notified_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"<ApplicationRow {self.id} {self.vacancy_id} {self.status}>"
@@ -221,3 +224,21 @@ class LlmCacheRow(Base):
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"<LlmCacheRow {self.model} {self.key[:8]}>"
+
+
+class TelegramUpdateRow(Base):
+    """A webhook update already handled.
+
+    Telegram retries deliveries, so the same press can arrive twice. Without
+    this, a retry of an old "approve" could land after a newer "reject" and
+    silently reverse it.
+    """
+
+    __tablename__ = "telegram_updates"
+
+    update_id: Mapped[int] = mapped_column(primary_key=True)
+    processed_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False, default=utcnow)
+    action: Mapped[str] = mapped_column(String(32), nullable=False, default="")
+
+    def __repr__(self) -> str:  # pragma: no cover - debugging aid
+        return f"<TelegramUpdateRow {self.update_id} {self.action}>"
