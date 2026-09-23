@@ -8,13 +8,12 @@ twice for the same answer.
 from __future__ import annotations
 
 import hashlib
-from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from talentflow.llm.errors import LlmBudgetExceeded
-from talentflow.storage.tables import LlmCacheRow, LlmCallRow
+from talentflow.storage.tables import LlmCacheRow, LlmCallRow, start_of_utc_day
 
 
 def prompt_hash(model: str, prompt: str) -> str:
@@ -25,12 +24,6 @@ def prompt_hash(model: str, prompt: str) -> str:
     silently serve one model's answer as another's.
     """
     return hashlib.sha256(f"{model}\x00{prompt}".encode()).hexdigest()
-
-
-def start_of_utc_day(now: datetime | None = None) -> datetime:
-    """Midnight UTC of the current day."""
-    moment = now or datetime.now(UTC)
-    return moment.astimezone(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 class BudgetGuard:
