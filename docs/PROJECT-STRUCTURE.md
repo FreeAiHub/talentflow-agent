@@ -1,536 +1,142 @@
-# 🏗️ TalentFlow Agent - Структура Проекта
+# Структура репозитория
 
-## 📋 Содержание
-1. [Общая архитектура](#общая-архитектура)
-2. [Структура репозитория](#структура-репозитория)
-3. [Протестированные инструменты](#протестированные-инструменты)
-4. [Фазы разработки](#фазы-разработки)
-5. [Технологический стек](#технологический-стек)
+Собрано командой `git ls-files` 23.09.2026 — фактическое содержимое, а не
+планируемое. Проверить: `git ls-files | wc -l`.
 
----
-
-## 🎯 Общая архитектура
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    TalentFlow Agent                          │
-│              AI-Платформа для Lead Generation                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Parsers    │────▶│  AI Engine   │────▶│   Output     │
-│              │     │              │     │              │
-│ • Djinni.co  │     │ • Flowise    │     │ • Leads DB   │
-│ • Work.ua    │     │ • OpenRouter │     │ • Dashboard  │
-│ • LinkedIn   │     │ • GPT-4o     │     │ • CRM        │
-└──────────────┘     └──────────────┘     └──────────────┘
-```
-
-### Поток данных
-
-```
-Вакансия → Парсинг → AI Анализ → Lead Scoring → Генерация → Отправка
-   │          │          │            │              │          │
-   │          │          │            │              │          │
-   ▼          ▼          ▼            ▼              ▼          ▼
-Djinni    BeautifulSoup Flowise   Алгоритм     OpenRouter   Email/
-Work.ua   Scrapy       Claude     scoring      GPT-4o       Telegram
-LinkedIn  Selenium     Context                 Prompts      Webhook
-```
-
----
-
-## 📁 Структура репозитория
-
-### Текущая структура (планируемая)
+Принцип: **в корне только то, что там ожидают увидеть.** Всё остальное —
+в `docs/`, коммерческие материалы — отдельно от технических.
 
 ```
 talentflow-agent/
-│
-├── 📄 README.md                    # Основное описание проекта
-├── 📄 ARCHITECTURE.md              # Архитектурные решения
-├── 📄 CONTRIBUTING.md              # Гайд для контрибьюторов
-├── 📄 LICENSE                      # MIT License
-├── 📄 .gitignore                   # Игнорируемые файлы
-├── 📄 .env.example                 # Пример конфигурации
-│
-├── 📂 docs/                        # Документация
-│   ├── PROJECT-STRUCTURE.md        # Этот файл
-│   ├── API-REFERENCE.md            # API документация
-│   ├── DEPLOYMENT.md               # Гайд по развертыванию
-│   ├── TESTING.md                  # Стратегия тестирования
-│   ├── adr/                        # Architectural Decision Records
-│   │   ├── 001-tech-stack.md
-│   │   ├── 002-ai-model-selection.md
-│   │   └── 003-database-choice.md
-│   └── diagrams/                   # Диаграммы архитектуры
-│       ├── architecture.png
-│       ├── data-flow.png
-│       └── deployment.png
-│
-├── 📂 src/                         # Исходный код
-│   ├── 📂 parsers/                 # Парсеры вакансий
-│   │   ├── __init__.py
-│   │   ├── base_parser.py          # Базовый класс парсера
-│   │   ├── djinni/
-│   │   │   ├── __init__.py
-│   │   │   ├── djinni_parser.py
-│   │   │   └── selectors.py
-│   │   ├── workua/
-│   │   │   ├── __init__.py
-│   │   │   └── workua_parser.py
-│   │   └── linkedin/
-│   │       ├── __init__.py
-│   │       └── linkedin_parser.py
-│   │
-│   ├── 📂 agents/                  # AI агенты
-│   │   ├── __init__.py
-│   │   ├── vacancy_analyzer.py     # Анализ вакансий
-│   │   ├── lead_scorer.py          # Оценка качества лида
-│   │   ├── response_generator.py   # Генерация откликов
-│   │   └── email_personalizer.py   # Персонализация писем
-│   │
-│   ├── 📂 api/                     # REST API
-│   │   ├── __init__.py
-│   │   ├── main.py                 # FastAPI приложение
-│   │   ├── dependencies.py         # Зависимости
-│   │   └── routers/
-│   │       ├── vacancies.py
-│   │       ├── leads.py
-│   │       ├── applications.py
-│   │       └── analytics.py
-│   │
-│   ├── 📂 database/                # База данных
-│   │   ├── __init__.py
-│   │   ├── models.py               # SQLAlchemy модели
-│   │   ├── schemas.py              # Pydantic схемы
-│   │   ├── crud.py                 # CRUD операции
-│   │   └── session.py              # Управление сессиями
-│   │
-│   ├── 📂 mcp-server/              # MCP Server (Linear интеграция)
-│   │   ├── index.ts
-│   │   ├── tools/
-│   │   ├── resources/
-│   │   └── prompts/
-│   │
-│   ├── 📂 utils/                   # Утилиты
-│   │   ├── __init__.py
-│   │   ├── config.py               # Конфигурация
-│   │   ├── logger.py               # Логирование
-│   │   ├── validators.py           # Валидация данных
-│   │   └── helpers.py              # Вспомогательные функции
-│   │
-│   └── 📂 integrations/            # Внешние интеграции
-│       ├── flowise/
-│       │   ├── client.py
-│       │   └── workflows/
-│       ├── calendly/
-│       │   └── scheduler.py
-│       └── telegram/
-│           └── notifier.py
-│
-├── 📂 workflows/                   # AI Workflows
-│   ├── 📂 flowise/                 # Flowise чатфлоу
-│   │   ├── vacancy_analyzer.json
-│   │   ├── response_generator.json
-│   │   └── lead_scorer.json
-│   └── 📂 n8n/                     # n8n автоматизация
-│       └── lead_processing.json
-│
-├── 📂 tests/                       # Тесты
-│   ├── __init__.py
-│   ├── conftest.py                 # Pytest конфигурация
-│   ├── unit/                       # Юнит тесты
-│   │   ├── test_parsers.py
-│   │   ├── test_agents.py
-│   │   └── test_utils.py
-│   ├── integration/                # Интеграционные тесты
-│   │   ├── test_api.py
-│   │   ├── test_database.py
-│   │   └── test_flowise.py
-│   └── e2e/                        # End-to-end тесты
-│       └── test_full_flow.py
-│
-├── 📂 scripts/                     # Скрипты
-│   ├── setup.sh                    # Установка зависимостей
-│   ├── migrate.py                  # Миграция БД
-│   ├── seed.py                     # Заполнение тестовыми данными
-│   └── deploy.sh                   # Деплой
-│
-├── 📂 config/                      # Конфигурационные файлы
-│   ├── development.yaml
-│   ├── production.yaml
-│   └── testing.yaml
-│
-├── 📂 alembic/                     # Database migrations
-│   ├── versions/
-│   ├── env.py
-│   └── alembic.ini
-│
-├── 📂 docker/                      # Docker конфигурация
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── docker-compose.dev.yml
-│   └── docker-compose.prod.yml
-│
-├── 📂 .github/                     # GitHub конфигурация
-│   ├── workflows/
-│   │   ├── ci.yml                  # CI pipeline
-│   │   ├── cd.yml                  # CD pipeline
-│   │   └── tests.yml               # Тесты
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
-│   └── pull_request_template.md
-│
-├── 📄 requirements.txt             # Python зависимости
-├── 📄 requirements-dev.txt         # Dev зависимости
-├── 📄 pyproject.toml               # Python проект конфиг
-├── 📄 setup.py                     # Setup скрипт
-└── 📄 package.json                 # Node.js зависимости (MCP)
+├── README.md  README_EN.md          описание продукта
+├── LICENSE  CONTRIBUTING.md         общепринятые файлы репозитория
+├── SECURITY.md  CHANGELOG.md        политика безопасности и история версий
+├── pyproject.toml  uv.lock          зависимости
+├── Dockerfile  docker-compose.yml   сборка и запуск
+├── alembic.ini  .env.example        настройки
+├── src/talentflow/                  код приложения
+├── tests/                           тесты и фикстуры
+├── alembic/                         миграции схемы
+├── docs/                            вся документация
+├── prompts/                         промпты и роли агентов
+├── scripts/                         служебные скрипты
+├── data/                            справочник моделей OpenRouter
+├── examples/                        примеры интеграций
+└── .github/                         CI, шаблоны issue и PR
 ```
 
----
-
-## ✅ Протестированные инструменты
-
-### 1. Linear MCP Server ✓
-
-**Статус:** Полностью настроен и протестирован
-
-**Что делает:**
-- Управление задачами проекта из Cline
-- Создание, поиск, обновление задач
-- Работа с комментариями и milestone
-- Автоматизация workflow
-
-**Документация:**
-- `data/Linea/Linear-Practical-Guide.md` - полное руководство
-- `data/Linea/Linear-Quick-Reference.md` - быстрая шпаргалка
-- `data/Linea/Обзор и тестирование коннектора Linear MCP.md` - технический обзор
-
-**Конфигурация:**
-```json
-{
-  "mcpServers": {
-    "github.com/cline/linear-mcp": {
-      "command": "node",
-      "args": ["/Users/investing/Documents/Cline/MCP/linear-mcp/build/index.js"],
-      "env": {
-        "LINEAR_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-**Протестированные функции:**
-- ✅ `linear_get_teams` - получение команд
-- ✅ `linear_search_projects` - поиск проектов
-- ✅ `linear_search_issues` - поиск задач с фильтрами
-- ✅ `linear_create_issue` - создание задачи
-- ✅ `linear_create_issues` - массовое создание
-- ✅ `linear_create_comment` - комментарии
-- ✅ `linear_create_project_milestones` - создание этапов
-- ✅ `linear_get_project_milestones` - получение этапов
-
-**Созданная структура:**
-- 6 Milestones (Phase 0-5)
-- 13 новых задач с детальным описанием
-- Учебная задача TAL-38 с примерами
-
----
-
-### 2. Flowise (планируется)
-
-**Статус:** Исследование завершено, ожидает внедрения
-
-**Планируемые чатфлоу:**
-- `vacancy_analyzer` - анализ вакансий
-- `response_generator` - генерация откликов
-- `lead_scorer` - оценка лидов
-
-**Модели:**
-- OpenRouter (основная)
-- GPT-4o-mini (фоллбэк)
-- Local Llama 3.1 (опционально)
-
----
-
-### 3. Парсеры (в разработке)
-
-**Целевые порталы:**
-
-#### 3.1. Djinni.co (Priority 1)
-- **Статус:** Анализ структуры (TAL-25)
-- **Технологии:** BeautifulSoup4, Scrapy
-- **Задачи:** TAL-29 (парсер), TAL-30 (анализ)
-
-#### 3.2. Work.ua (Priority 2)
-- **Статус:** Планирование
-- **Задача:** TAL-33
-
-#### 3.3. LinkedIn Jobs (Priority 1)
-- **Статус:** Планирование
-- **Библиотека:** JobSpy
-- **Задача:** TAL-34
-
----
-
-### 4. База данных (планируется)
-
-**Статус:** Проектирование схемы
-
-**Технологии:**
-- PostgreSQL (основная БД)
-- Redis (кэш, очереди)
-- SQLAlchemy 2.0 (ORM)
-- Alembic (миграции)
-
-**Таблицы:**
-- `vacancies` - вакансии из всех источников
-- `candidates` - профили кандидатов
-- `applications` - отправленные отклики
-- `responses` - полученные ответы
-- `analytics` - метрики и KPI
-
-**Задача:** TAL-35
-
----
-
-### 5. REST API (планируется)
-
-**Статус:** Проектирование эндпоинтов
-
-**Технологии:**
-- FastAPI (фреймворк)
-- JWT (аутентификация)
-- OpenAPI (документация)
-
-**Основные эндпоинты:**
-```
-POST /api/v1/vacancies/parse
-GET  /api/v1/vacancies
-GET  /api/v1/vacancies/{id}
-POST /api/v1/applications/generate
-GET  /api/v1/applications
-GET  /api/v1/analytics/dashboard
-```
-
-**Задача:** TAL-36
-
----
-
-## 🎯 Фазы разработки
-
-### Phase 0: Подготовка и Исследование
-**Срок:** До 12.11.2025  
-**Задачи:** TAL-25, TAL-26, TAL-27
-
-- [x] Linear MCP настроен
-- [ ] Анализ Djinni.co
-- [ ] Изучение болей пользователей
-- [ ] Финализация tech spec
-
----
-
-### Phase 1: MVP Разработка
-**Срок:** До 03.12.2025  
-**Задачи:** TAL-28 до TAL-37
-
-**Djinni.co интеграция:**
-- [ ] Базовая инфраструктура (TAL-28)
-- [ ] Парсер Djinni.co (TAL-29)
-- [ ] Flowise чатфлоу для анализа (TAL-30)
-- [ ] Flowise генератор откликов (TAL-31)
-- [ ] Оркестратор (TAL-32)
-
-**Расширение:**
-- [ ] Парсер Work.ua (TAL-33)
-- [ ] Парсер LinkedIn (TAL-34)
-- [ ] База данных (TAL-35)
-- [ ] REST API (TAL-36)
-- [ ] Валидация MVP (TAL-37)
-
----
-
-### Phase 2: Website & Landing Page
-**Срок:** До 10.12.2025
-
-- [ ] Landing page на Next.js
-- [ ] Документация
-- [ ] Блог
-- [ ] SEO оптимизация
-
----
-
-### Phase 3: Контент-Маркетинг
-**Срок:** До 31.01.2026
-
-- [ ] Build in Public стратегия
-- [ ] Ежедневные блог-посты
-- [ ] SEO оптимизация
-- [ ] Social media presence
-
----
-
-### Phase 4: Launch & Distribution
-**Срок:** До 24.12.2025
-
-- [ ] Product Hunt launch
-- [ ] HackerNews Show HN
-- [ ] Reddit распространение
-- [ ] Tech media outreach
-
----
-
-### Phase 5: Монетизация
-**Срок:** До 28.02.2026
-
-- [ ] Stripe/Paddle интеграция
-- [ ] Cloud Starter план ($19/mo)
-- [ ] Cloud Pro план ($49/mo)
-- [ ] B2B SaaS для аутстаф
-
----
-
-## 🛠️ Технологический стек
-
-### Backend
-```python
-# Core
-Python 3.11+
-FastAPI 0.104+
-Pydantic 2.0+
-
-# Database
-PostgreSQL 15+
-SQLAlchemy 2.0+
-Alembic 1.12+
-Redis 7+
-
-# AI/ML
-Langchain 0.1+
-Langgraph 0.1+
-OpenAI SDK
-OpenRouter SDK
-
-# Parsing
-BeautifulSoup4
-Scrapy 2.11+
-Selenium 4+
-JobSpy
-
-# Utils
-Polars
-Numpy
-Pandas
-```
-
-### Frontend
-```javascript
-// Framework
-Next.js 14+
-React 18+
-TypeScript 5+
-
-// State & Data
-Redux Toolkit
-React Query
-Zustand
-
-// Styling
-Tailwind CSS
-Material-UI
-Shadcn/ui
-
-// Visualization
-Echarts
-D3.js
-Recharts
-
-// Real-time
-Socket.IO Client
-```
-
-### Infrastructure
-```yaml
-# Containerization
-Docker 24+
-Docker Compose
-
-# Orchestration
-Kubernetes (optional)
-
-# CI/CD
-GitHub Actions
-
-# Monitoring
-Prometheus
-Grafana
-OpenTelemetry
-
-# Logging
-Structlog
-ELK Stack (optional)
-```
-
-### AI Platforms
-```
-# LLM Providers
-OpenAI (GPT-4 Turbo, GPT-4o-mini)
-OpenRouter
-Local (Llama 3.1 via Ollama)
-
-# Orchestration
-Flowise AI
-Langchain
-Langgraph
-
-# Vector DB
-Pinecone
-ChromaDB (local)
-```
-
----
-
-## 📊 Метрики успеха
-
-### Месяц 1
-- ✅ Linear MCP настроен
-- ✅ 100+ GitHub stars (цель)
-- ✅ 50+ email signups
-- ✅ 10 активных деплоев
-- ✅ 5 paying customers
-
-### Месяц 3
-- 500+ GitHub stars
-- 200+ email signups
-- 50 деплоев
-- 25 paying customers
-- $1,000 MRR
-
-### Месяц 6
-- 1,500+ GitHub stars
-- 1,000+ email signups
-- 200 деплоев
-- 100 paying customers
-- $5,000 MRR
-
----
-
-## 🔗 Полезные ссылки
-
-- **GitHub Repo:** https://github.com/FreeAiHub/talentflow-agent
-- **Linear Project:** https://linear.app/talentflowhub/project/talentflow-bb78fd48809f
-- **Documentation:** `docs/` directory
-- **Master Plan:** `data/TalentFlow-Agent-Master-Plan.md`
-
----
-
-**Обновлено:** 05.11.2025  
-**Версия:** 0.1.0 (Pre-MVP)  
-**Статус:** В разработке 🚧
+## Корень
+
+| Файл | Зачем |
+|---|---|
+| `README.md`, `README_EN.md` | описание продукта, русский и английский |
+| `LICENSE` | MIT |
+| `CONTRIBUTING.md` | как вносить изменения и правило документации |
+| `SECURITY.md` | как сообщить об уязвимости, что в области действия |
+| `CHANGELOG.md` | история изменений по Keep a Changelog |
+| `pyproject.toml` | зависимости, настройки ruff, pytest, mypy |
+| `Dockerfile`, `docker-compose.yml`, `docker-entrypoint.sh` | сборка и запуск |
+| `alembic.ini` | конфигурация миграций |
+| `.env.example` | имена переменных **без значений** |
+| `context7.json`, `.yamllint`, `.gitignore`, `.dockerignore` | настройки инструментов |
+
+## `docs/` — вся документация
+
+Указатель с описанием каждого файла — [docs/README.md](README.md).
+
+| Группа | Файлы |
+|---|---|
+| Понять продукт | `CONCEPT.md`, `PROJECT-STATUS.md`, `ROADMAP.md` |
+| Запустить | `DEMO.md`, `DEPLOY.md`, `GITHUB-DEPLOYMENT.md` |
+| Понять устройство | `ARCHITECTURE.md`, `PROJECT-STRUCTURE.md`, `INTEGRATIONS.md` |
+| Работа над проектом | `DEVELOPMENT_PLAN.md`, `AGENT-ROSTER.md`, `MODEL-ROTATION.md`, `EVAL-BASELINE.md` |
+| Коммерческие материалы | `business/` — **не описывают текущее состояние кода** |
+| Исследования | `research/` — пять отчётов от 23.09.2026 |
+| Иллюстрации | `images/` |
+
+## `src/talentflow/` — код приложения
+
+| Модуль | Назначение |
+|---|---|
+| `pipeline.py` | порядок стадий и их запись в таблицу `runs`; точка входа CLI |
+| `scheduler.py` | запуск конвейера по интервалу внутри процесса |
+| `config.py` | единственное место чтения переменных окружения (`TALENTFLOW_*`) |
+| `models.py` | доменные модели Pydantic |
+| `parsers/djinni.py` | разбор выдачи Djinni из `ld+json` |
+| `scorers/quality_scorer.py` | оценка вакансии по профилю ICP |
+| `generators/response.py` | черновик отклика + проверка на выдуманные факты |
+| `llm/client.py` | цепочка провайдеров, все на OpenAI-совместимом формате |
+| `llm/guard.py` | суточный бюджет вызовов и кэш ответов |
+| `llm/prompts.py` | сборка промптов |
+| `llm/tracing.py` | структурные JSON-логи всегда, Langfuse опционально |
+| `llm/errors.py` | исключения слоя моделей |
+| `storage/tables.py` | схема SQLAlchemy, семь таблиц |
+| `storage/repository.py` | единственный слой, знающий и строки, и доменные модели |
+| `storage/db.py` | асинхронный движок и сессии |
+| `notifiers/telegram.py` | сообщения с кнопками, дедупликация доставок |
+| `api/main.py` | FastAPI: REST, подтверждение черновиков, вебхуки |
+| `evals/metrics.py` | метрики качества скоринга с интервалами |
+
+У `parsers`, `scorers`, `generators` и `evals` есть `__main__.py` — каждый
+запускается отдельно: `python -m talentflow.<модуль>`.
+
+## `tests/` — тесты, без сети
+
+| Файл | Что проверяет |
+|---|---|
+| `conftest.py` | подменяет транспорт; тесты не ходят в сеть |
+| `test_djinni_parser.py` | разбор записанной страницы Djinni |
+| `test_scorer.py` | формула оценки |
+| `test_generator.py` | генерация черновика и проверка на выдумки |
+| `test_llm_client.py` | цепочка провайдеров, повторы, бюджет |
+| `test_storage.py` | репозиторий и запросы |
+| `test_migrations.py` | миграции на пустой базе |
+| `test_pipeline.py` | стадии и их запись в `runs` |
+| `test_telegram.py` | кнопки, подпись вебхука, дедупликация |
+| `test_health.py` | HTTP-слой |
+| `test_deploy.py` | артефакты развёртывания |
+| `test_evals.py` | метрики и разметка |
+| `fixtures/djinni_jobs_page1.html` | записанная страница — на ней работают тесты и демо |
+| `fixtures/labeled_vacancies.json` | размеченный набор для evals |
+| `fixtures/robots.txt` | соблюдение правил обхода |
+
+## `alembic/` — схема
+
+Четыре миграции, применяются `uv run alembic upgrade head`:
+
+1. `20260923_1333_initial_schema` — вакансии, оценки, черновики, прогоны
+2. `20260923_1343_llm_calls_and_response_cache` — учёт вызовов и кэш ответов
+3. `20260923_1401_telegram_update_dedup` — дедупликация обновлений Telegram
+4. `20260923_1402_application_notified_at` — отметка об уведомлении
+
+## `prompts/`
+
+Рабочие промпты конвейера (`vacancy_analyzer.md`, `vacancy_scorer.md`,
+`quality_scorer.md`, `response_generator.md`, `archetype_matcher.md`,
+`grounding_checker.md`, `jev-vacancy-scoring.md`) и `agents/` — семь ролей
+процесса разработки с описанием ротации.
+
+## `scripts/`
+
+| Скрипт | Зачем |
+|---|---|
+| `demo.py` | сквозной сценарий от пустой базы до утверждённого отклика; офлайн по умолчанию |
+| `backup.sh` | резервная копия и восстановление PostgreSQL |
+| `model_catalog.py` | сборка справочника моделей OpenRouter в `data/` |
+
+## `.github/`
+
+`workflows/ci.yml` (lint, тесты, mypy), `workflows/docs.yml` (проверка ссылок,
+yamllint, `compileall`), `ISSUE_TEMPLATE/bug_report.md`,
+`pull_request_template.md`, `markdown-link-check.json`.
+
+## Что убрано и почему
+
+| Что | Почему |
+|---|---|
+| `docs/GLOBAL-ARCHITECTURE.md` (33 КБ), `docs/ARCHITECTURE-DETAILED.md` (10.6 КБ), корневой `ARCHITECTURE.md` | описывали платформу с Redis, Celery, Pinecone, Grafana; слиты в один [docs/ARCHITECTURE.md](ARCHITECTURE.md) |
+| `docs/GLOBAL-PROJECT-OVERVIEW.md` | дублировал README и CONCEPT |
+| `docs/FLOWISE-INTEGRATION.md` (19.9 КБ) | Flowise в проекте не используется |
+| `docs/GITHUB-MCP-TEST-REPORT.md`, `docs/GITHUB-SPEC-KIT-INTEGRATION.md`, `docs/LINK-AUDIT-REPORT.md` | одноразовые отчёты об инструментах, не о продукте |
+| `.github/CONTRIBUTING.md` | дубль корневого |
+| `materials/` | единственный файл переехал в `docs/business/presentations.md` |

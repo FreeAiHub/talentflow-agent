@@ -1,144 +1,168 @@
-# 🚀 TalentFlow Agent
+# TalentFlow Agent
 
-![Version](https://img.shields.io/badge/version-0.1.0--pre--mvp-orange)
-![Python](https://img.shields.io/badge/python-3.11+-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
+Collects vacancies from Djinni, scores them against your profile, drafts a reply,
+and sends the shortlist to Telegram. Nothing is sent until a human approves it.
 
-**[README на русском](./README.md)** · [Интеграции](./INTEGRATIONS.md) · [Roadmap](./ROADMAP.md)
+It is built for one specialist or a small outstaffing team that wants to see
+**why** a vacancy was shortlisted instead of trusting a black box.
 
-AI platform for automated vacancy lead generation: parses vacancies from job boards, scores them with LLMs, and generates personalized outreach responses.
+## Status
 
-## 👨‍💻 About the Developer
+Runs end to end on a single machine: collect → de-duplicate → score → draft →
+approve → notify. Last commit 23.09.2026.
 
-TalentFlow Agent is built by a lead generation expert with years of experience in AI and full-stack development.
+Not a consumer service: you run it on your own server, storage is PostgreSQL or
+SQLite, and there is no web interface.
 
-## 📖 About the Project
+## What it does
 
-**TalentFlow Agent** automates the top of the recruiting funnel for outstaffing companies, freelance recruiters, and HR agencies:
+| Stage | Code | What happens |
+|---|---|---|
+| Collect | `src/talentflow/parsers/djinni.py` | reads a Djinni listing, parses `ld+json`, stores new vacancies |
+| De-duplicate | `src/talentflow/storage/repository.py` | collecting the same page twice adds nothing |
+| Score | `src/talentflow/scorers/` | compares the vacancy against your ICP profile and explains the score |
+| Threshold | `TALENTFLOW_MIN_LEAD_SCORE` (default `0.6`) | anything below the cut does not move on |
+| Draft | `src/talentflow/generators/response.py` | writes a reply for that specific vacancy |
+| Grounding check | `src/talentflow/llm/guard.py` | blocks a draft that credits you with experience you do not have |
+| Approval | `TALENTFLOW_HUMAN_IN_THE_LOOP` (default `true`) | sending is refused until approved — a gate in code, not a note in a doc |
+| Notify | `src/talentflow/notifiers/telegram.py` | sends a card with Approve and Reject buttons |
 
-- Collects vacancies from **Djinni, Work.ua, LinkedIn, Indeed** (via JobSpy)
-- Scores each vacancy with AI against your service archetype
-- Generates **personalized responses** instead of generic cover letters
-- Tracks pipeline in **Linear** (MCP integration)
-- Exposes a **FastAPI** core that n8n / Instantly.ai / Botpress / voice agents plug into
+Run it by hand (`python -m talentflow.pipeline`) or on a schedule
+(`src/talentflow/scheduler.py`).
 
-### 🎯 Key Features
+## Quick start
 
-- 🔎 **Multi-source parsing** — Djinni, Work.ua, LinkedIn, Indeed
-- 🧠 **AI relevance scoring** — prompts live in [`prompts/`](./prompts/), outputs validated with Pydantic v2
-- ✍️ **Personalized response generation** — human-in-the-loop by default
-- 🤖 **Automation-ready** — n8n orchestration, Instantly.ai outreach, Botpress chat conversion
-- 🎙️ **Voice phase** — Vapi / Retell AI calls (webhook ready in the API)
-- 🔒 **Secure by design** — HMAC webhooks, secrets via environment, GDPR-minded data minimization
-
-## 🏗️ Architecture
-
-```
-┌────────────────┐     ┌────────────────┐     ┌────────────────┐
-│    Parsing     │     │   AI Scoring   │     │    Outreach    │
-│  JobSpy:       │ ──> │  LangChain +   │ ──> │  Responses,    │
-│  Djinni,       │     │  prompts/      │     │  n8n,          │
-│  Work.ua,      │     │  Pydantic v2   │     │  Instantly.ai, │
-│  LinkedIn      │     │                │     │  Voice (Vapi)  │
-└────────────────┘     └────────────────┘     └────────────────┘
-         │                     │                      │
-         └─────────────────────┴──────────────────────┘
-              FastAPI · Docker · PostgreSQL · Linear (MCP)
-```
-
-## 🚀 Quick Start
-
-### Requirements
-
-- Python 3.11+
-- Docker & Docker Compose
-- API keys: OpenAI (LLM), optional Vapi (voice)
-
-### Installation
+No API key and no network needed: the demo reads a **recorded Djinni page** from
+`tests/fixtures` and answers with a stub instead of a model, so it is
+deterministic.
 
 ```bash
-# Clone
 git clone https://github.com/FreeAiHub/talentflow-agent.git
 cd talentflow-agent
-
-# Run with Docker (API on :8000, PostgreSQL included)
-docker compose up --build
-
-# Or run locally
-pip install -e .
-uvicorn talentflow.api.main:app --reload
+uv sync
+uv run python scripts/demo.py
 ```
 
-- Swagger UI: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
-- Configure keys in `.env` (see `.env.example`)
-
-## 📁 Project Structure
+Real output from the last step (trimmed):
 
 ```
-talentflow-agent/
-├── src/talentflow/        # Core package
-│   ├── api/               # FastAPI REST API + webhooks
-│   ├── parsers/           # JobSpy adapter (Djinni, Work.ua, LinkedIn)
-│   ├── scorers/           # LLM relevance scoring
-│   ├── models.py          # Pydantic v2 domain models
-│   └── config.py          # Settings (env: TALENTFLOW_*)
-├── prompts/               # LLM prompts (analyzer, scorer, matcher, generator)
-├── examples/              # Integration examples (Vapi webhook mock)
-├── docs/                  # Detailed documentation
-├── materials/             # Presentations & client materials
-├── INTEGRATIONS.md        # Docker deploy, n8n, Instantly.ai, Botpress, voice
-├── Dockerfile             # Multi-stage build (uv)
-└── docker-compose.yml     # app + PostgreSQL 17
+2. Collect again -- idempotency
+   added on second pass: 0 (expected 0)
+
+3. Score
+   + 0.82  Mantah                 QA Engineer
+   + 0.82  Solidgate              Junior Account Manager
+   above threshold 0.6: 5 of 5
+
+4. Draft a reply
+   grounding check: ok
+   draft #1, status: pending
+
+6. Gate: sending before approval is refused
+   send refused: application 1 is 'pending'; a human must approve it
+
+7. Human approves
+   status: approved, sending allowed
 ```
 
-## ✅ Development Status
+The script ends with a warning worth reading: the offline run proves the plumbing
+and the gate work, **not** that the scoring is accurate. For a live run use
+`uv run python scripts/demo.py --live` with a key in `.env`.
 
-| Phase | Scope | Status |
-|-------|-------|--------|
-| Phase 0 | Concept, architecture, prompts, integrations design | ✅ Done |
-| Phase 1 — MVP Day 1 | Code skeleton, Docker, CI, docs | ✅ **This release** |
-| Phase 1 — MVP Day 2 | JobSpy parser, LLM scorer, storage | 🔜 Next |
-| Phase 1 — MVP Day 3 | Response generator, cloud deploy, demo | 🔜 Next |
-| Phase 2 | Voice (Vapi/Retell), frontend, n8n/Instantly/Botpress wiring | 📋 Planned |
+## Running the pipeline by hand
 
-MVP completion plan: [INTEGRATIONS.md](./INTEGRATIONS.md).
+```bash
+uv run python -m talentflow.pipeline --parse-limit 20 --score-limit 20 --generate-limit 5
 
-## 🛠️ Tech Stack
+# individual stages
+uv run python -m talentflow.parsers      # collect only
+uv run python -m talentflow.scorers      # score only
+uv run python -m talentflow.generators   # drafts only
+uv run python -m talentflow.evals        # scoring quality metrics
+```
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | FastAPI, Pydantic v2, PostgreSQL |
-| AI/ML | LangChain, OpenAI-compatible LLMs |
-| Parsing | JobSpy (Djinni, Work.ua, LinkedIn, Indeed) |
-| Automation | n8n, Instantly.ai, Botpress |
-| Voice (phase 2) | Vapi, Retell AI |
-| Frontend (planned) | Next.js 14 |
-| DevOps | Docker, Compose, Coolify / Railway / Fly.io |
+A database is required: `TALENTFLOW_DATABASE_URL` (default
+`sqlite:///./talentflow.db`). Create the schema with
+`uv run alembic upgrade head`.
 
-## 🎯 Use Cases
+## Environment
 
-1. **Outstaffing companies** — feed developers' profiles, get matched vacancies daily
-2. **Freelance recruiters** — automate sourcing and first-contact outreach
-3. **HR agencies** — pipeline vacancies and candidates in Linear, respond faster than competitors
+Every setting is read with the `TALENTFLOW_` prefix and declared in
+`src/talentflow/config.py`. The full list is in `.env.example`.
 
-## 📖 Documentation
+| Variable | Default | Purpose |
+|---|---|---|
+| `TALENTFLOW_DATABASE_URL` | `sqlite:///./talentflow.db` | storage; PostgreSQL in production |
+| `TALENTFLOW_OPENROUTER_API_KEY` | — | first provider in the chain |
+| `TALENTFLOW_GROQ_API_KEY` | — | fallback provider |
+| `TALENTFLOW_LLM_MODELS` | `openrouter:openai/gpt-oss-120b:free` | primary model chain |
+| `TALENTFLOW_LLM_FALLBACK_MODELS` | `groq:llama-3.3-70b-versatile` | used when the primary fails |
+| `TALENTFLOW_LLM_DAILY_CALL_LIMIT` | `250` | spend ceiling in calls |
+| `TALENTFLOW_MIN_LEAD_SCORE` | `0.6` | shortlist threshold |
+| `TALENTFLOW_HUMAN_IN_THE_LOOP` | `true` | refuse to send without approval |
+| `TALENTFLOW_GROUNDING_CHECK_ENABLED` | `true` | check drafts for invented claims |
+| `TALENTFLOW_TELEGRAM_BOT_TOKEN` | — | notifications |
+| `TALENTFLOW_TELEGRAM_CHAT_ID` | — | where to send them |
+| `TALENTFLOW_SCHEDULER_ENABLED` | `false` | run on a schedule |
+| `TALENTFLOW_SCHEDULER_INTERVAL_MINUTES` | `30` | schedule period |
 
-- [Integrations panel](./INTEGRATIONS.md) — Docker deploy, n8n, Instantly.ai, Botpress, voice, security, validation
-- [Concept](./CONCEPT.md) · [Architecture](./ARCHITECTURE.md) · [Roadmap](./ROADMAP.md) · [Development plan](./DEVELOPMENT_PLAN.md)
-- [Project structure](./docs/PROJECT-STRUCTURE.md) · [Detailed architecture](./docs/ARCHITECTURE-DETAILED.md)
-- [Client guide](./CLIENT-GUIDE.md) · [Short presentation](./CLIENT-PRESENTATION-SHORT.md) · [Call plan](./CALL-PLAN.md)
+Collection, rule-based scoring and the demo work without any key. A key is needed
+only to draft replies with a live model.
 
-## 🤝 Contributing
+## Stack
 
-Issues and PRs are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Actual dependencies, from `pyproject.toml`:
 
-## 📞 Contacts
+`Python 3.11+` · `FastAPI` · `uvicorn` · `Pydantic` · `pydantic-settings` ·
+`httpx` · `SQLAlchemy 2.0 (asyncio)` · `Alembic` · `APScheduler` ·
+`aiosqlite` / `asyncpg`
 
-- [Issues](https://github.com/FreeAiHub/talentflow-agent/issues) — bugs and feature requests
-- [Discussions](https://github.com/FreeAiHub/talentflow-agent/discussions) — questions and ideas
+Development: `pytest`, `pytest-asyncio`, `ruff`, `mypy`.
+LLM tracing is opt-in (`pip install -e ".[observability]"`, Langfuse).
 
-## 📜 License
+## Tests
 
-MIT — see [LICENSE](./LICENSE).
+**293 tests, no network** — verified 23.09.2026. The run takes about ten seconds
+on a laptop; the exact time depends on the machine, so it is not quoted as a
+property of the project.
+
+```bash
+uv run pytest -q        # 293 passed
+uv run ruff check .     # All checks passed!
+uv run mypy
+```
+
+The tests never touch the network: `tests/conftest.py` replaces the transport and
+the Djinni page comes from `tests/fixtures/djinni_jobs_page1.html`. That means
+they check the logic but **not** the model's quality — `evals` exists for that.
+
+CI (`.github/workflows/ci.yml`) runs lint and tests on every push.
+
+## What is not there yet
+
+- **Djinni only.** LinkedIn and Indeed are deferred to phase 2 through JobSpy;
+  Work.ua is not supported (`src/talentflow/parsers/__init__.py`).
+- **No automatic sending** and none planned without a person: the approval gate
+  is part of the design, not a temporary stub.
+- **No web interface.** Interaction is Telegram and the command line.
+- **No measured scoring accuracy on real data** — the evals scaffold exists, the
+  baseline has not been taken.
+- **No uptime monitoring, no SLA.** Uptime percentages are not published,
+  because there is nothing measuring them.
+
+## Documentation
+
+The full index is [docs/README.md](docs/README.md). The short list:
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — layers, data flow, schema, security
+- [docs/CONCEPT.md](docs/CONCEPT.md) — why it exists and who it is for
+- [docs/DEMO.md](docs/DEMO.md) — the demo scenario
+- [docs/DEPLOY.md](docs/DEPLOY.md) — deployment
+- [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) — what works, what does not
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute
+- [SECURITY.md](SECURITY.md) — how to report a vulnerability
+- [CHANGELOG.md](CHANGELOG.md) — what changed
+
+## License
+
+MIT — see [LICENSE](LICENSE).

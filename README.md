@@ -1,357 +1,167 @@
-# 🚀 TalentFlow Agent
+# TalentFlow Agent
 
-<div align="center">
+Собирает вакансии с Djinni, оценивает их по вашему профилю, пишет черновик
+отклика и присылает подборку в Telegram. Отправка — только после подтверждения
+человеком.
 
-![Version](https://img.shields.io/badge/version-0.1.0--pre--mvp-blue)
-![Python](https://img.shields.io/badge/python-3.11+-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Status](https://img.shields.io/badge/status-in--development-yellow)
+Конвейер рассчитан на одного специалиста или небольшую аутстаф-команду, которой
+нужно видеть, **почему** вакансия попала в подборку, а не доверять чёрному ящику.
 
-**AI-Платформа для автоматизации лидогенерации через интеллектуальный анализ вакансий**
+## Статус
 
-[Документация](./docs/PROJECT-STRUCTURE.md) · [Концепция](./CONCEPT.md) · [Roadmap](./ROADMAP.md) · [Интеграции](./INTEGRATIONS.md) · [EN](./README_EN.md)
+Работает end-to-end на локальной машине: сбор → дедупликация → оценка →
+черновик → подтверждение → уведомление. Последний коммит — 23.09.2026.
 
-</div>
+Не сервис для конечных пользователей: разворачивается на своём сервере, схема
+данных — PostgreSQL либо SQLite, веб-интерфейса нет.
 
----
+## Что делает
 
-## 👨‍💻 О разработчике
+| Стадия | Код | Что происходит |
+|---|---|---|
+| Сбор | `src/talentflow/parsers/djinni.py` | читает выдачу Djinni, разбирает `ld+json`, пишет новые вакансии в базу |
+| Дедупликация | `src/talentflow/storage/repository.py` | повторный сбор той же страницы не добавляет ничего |
+| Оценка | `src/talentflow/scorers/` | сверяет вакансию с профилем ICP, ставит оценку и объясняет её |
+| Порог | `TALENTFLOW_MIN_LEAD_SCORE` (по умолчанию `0.6`) | всё ниже порога дальше не идёт |
+| Черновик | `src/talentflow/generators/response.py` | пишет отклик под конкретную вакансию |
+| Проверка на выдумки | `src/talentflow/llm/guard.py` | блокирует черновик, если модель приписала вам несуществующий опыт |
+| Подтверждение | `TALENTFLOW_HUMAN_IN_THE_LOOP` (по умолчанию `true`) | до аппрува отправка запрещена — гейт в коде, а не в инструкции |
+| Уведомление | `src/talentflow/notifiers/telegram.py` | присылает карточку с кнопками «Утвердить» и «Отклонить» |
 
-**TalentFlow Agent** разрабатывается экспертом по лидогенерации с многолетним опытом в AI и full stack разработке. Проект находится под контролем опытного синиора, который:
+Запускается вручную (`python -m talentflow.pipeline`) или по расписанию
+(`src/talentflow/scheduler.py`).
 
-- **🧠 Протестировал 25+ AI моделей** — от Claude 3.5 Sonnet до Local Llama 3.1
-- **🤖 Разработал 15+ алгоритмов чат-ботов** обученных на 10,000+ реальных откликах
-- **🚀 Развернул продакшн инфраструктуру** с 99.9% uptime
-- **📊 Достиг 80% автоматической генерации агентов** под задачи клиентов
-- **🎯 Экспертная экспертиза** в сфере лидогенерации и рекрутинга
+## Быстрый старт
 
----
-
-## 📖 О проекте
-
-**TalentFlow Agent** — это open-source AI-агент для автоматизации лидогенерации в сфере аутстаффинга и рекрутинга, созданный экспертом с глубокими знаниями в области лидогенерации. Система анализирует вакансии с job-порталов (Djinni.co, Work.ua, LinkedIn) и генерирует персонализированные коммерческие предложения с высокой конверсией.
-
-### 🎯 Ключевые возможности
-
-- **🔍 Интеллектуальный парсинг** — Автоматизированный сбор вакансий с нескольких источников
-- **🤖 AI-анализ** — Глубокий анализ требований и болей компании через протестированные LLM модели
-- **✨ Генерация предложений** — Персонализированные отклики с высокой конверсией на основе real-world данных
-- **📊 Lead Scoring** — Автоматическая оценка качества лидов через валидированные алгоритмы
-- **📈 Analytics** — Dashboard с метриками и конверсиями
-- **🔄 Интеграции** — Calendly, CRM, Telegram, Email
-
----
-
-## 🏗️ Архитектура
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    TalentFlow Agent                          │
-│              AI-Платформа для Lead Generation                │
-│                  (под контролем эксперта)                    │
-└─────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Parsers    │────▶│  AI Engine   │────▶│   Output     │
-│              │     │ (Tested LLM) │     │              │
-│ • Djinni.co  │     │              │     │ • Leads DB   │
-│ • Work.ua    │     │ • Analyzer   │     │ • Dashboard  │
-│ • LinkedIn   │     │ • Generator  │     │ • CRM        │
-│ • JobSpy     │     │ • Scorer     │     │ • Linear     │
-└──────────────┘     └──────────────┘     └──────────────┘
-```
-
-**Детальная документация:**
-- 📐 [Глобальная архитектура](./docs/GLOBAL-ARCHITECTURE.md) — полная техническая документация
-- 🔗 [GitHub Spec Kit интеграция](./docs/GITHUB-SPEC-KIT-INTEGRATION.md) — автоматизация GitHub workflow
-- 🎯 [Презентация для клиента](./docs/CLIENT-PRESENTATION.md) — бизнес-ценность и ROI
-- 📁 [Структура проекта](./docs/PROJECT-STRUCTURE.md) — организация кодовой базы
-
----
-
-## 🚀 Быстрый старт
-
-### Требования
-
-- Python 3.11+
-- Node.js 18+ (для MCP сервера)
-- Docker & Docker Compose
-- PostgreSQL 15+
-- Redis 7+
-
-### Установка
+Ключи и сеть не нужны: демо читает **записанную страницу Djinni** из
+`tests/fixtures` и отвечает заглушкой вместо модели. Прогон детерминирован.
 
 ```bash
-# Клонировать репозиторий
 git clone https://github.com/FreeAiHub/talentflow-agent.git
 cd talentflow-agent
-
-# Установить зависимости Python
-pip install -r requirements.txt
-
-# Установить зависимости Node.js (MCP)
-npm install
-
-# Настроить окружение
-cp .env.example .env
-# Отредактируйте .env с вашими API ключами
-
-# Запустить через Docker
-docker-compose up -d
-
-# Запустить миграции
-python scripts/migrate.py
+uv sync
+uv run python scripts/demo.py
 ```
 
-### API Ключи
-
-Вам понадобятся:
-- **LINEAR_API_KEY** — для интеграции с Linear ([получить](https://linear.app/settings/api))
-- **OPENAI_API_KEY** — для GPT моделей
-- **ANTHROPIC_API_KEY** — для Claude 3.5 Sonnet
-- **OPENROUTER_API_KEY** — для LLM gateway
-
----
-
-## 📁 Структура проекта
+Реальный вывод последнего шага (сокращён):
 
 ```
-talentflow-agent/
-├── src/
-│   ├── parsers/         # Парсеры вакансий (Djinni, Work.ua, LinkedIn)
-│   ├── agents/          # AI агенты (анализ, генерация, scoring)
-│   ├── services/        # Бизнес-логика и интеграции
-│   │   ├── ai_engine.py         # AI-движок
-│   │   ├── openrouter_client.py # OpenRouter API клиент
-│   │   └── integrations/        # Внешние сервисы
-│   ├── api/             # FastAPI REST API
-│   ├── database/        # SQLAlchemy модели и CRUD
-│   ├── mcp-server/      # Linear MCP интеграция
-│   └── utils/           # Утилиты и хелперы
-├── workflows/
-│   ├── github-spec-kit/ # GitHub Spec Kit автоматизация
-│   │   ├── issues.yaml         # Спецификация Issues
-│   │   └── releases.yaml       # Спецификация Releases
-│   └── n8n/             # n8n автоматизация
-├── tests/               # Unit, Integration, E2E тесты
-├── docs/                # 📚 Подробная документация
-│   ├── GLOBAL-ARCHITECTURE.md   # Архитектура системы
-│   ├── GITHUB-SPEC-KIT-INTEGRATION.md # GitHub автоматизация
-│   ├── CLIENT-PRESENTATION.md   # Презентация проекта
-│   └── PROJECT-STRUCTURE.md     # Структура проекта
-└── docker/              # Docker конфигурация
+2. Собираем повторно — идемпотентность
+   повторно добавлено: 0 (ожидается 0)
+
+3. Оцениваем
+   ✓ 0.82  Mantah                 QA Engineer
+   ✓ 0.82  Solidgate              Junior Account Manager
+   выше порога 0.6: 5 из 5
+
+4. Пишем черновик отклика
+   проверка на выдумки: ok
+   черновик #1, статус: pending
+
+6. Гейт: до подтверждения отправить нельзя
+   отправка запрещена: application 1 is 'pending'; a human must approve it
+
+7. Человек подтверждает
+   статус: approved, отправка разрешена
 ```
 
-**[Детальная структура →](./docs/PROJECT-STRUCTURE.md) | [Архитектура →](./docs/GLOBAL-ARCHITECTURE.md)**
+Скрипт заканчивается предупреждением, которое стоит прочитать: офлайн-прогон
+доказывает, что части соединены и гейт работает, **а не** что скоринг точен.
+Для живой проверки — `uv run python scripts/demo.py --live` и ключ в `.env`.
 
----
+## Конвейер вручную
 
-## ✅ Статус разработки
+```bash
+uv run python -m talentflow.pipeline --parse-limit 20 --score-limit 20 --generate-limit 5
 
-### Phase 0: Подготовка (Текущая фаза)
-- [x] Настройка Linear сервера
-- [x] Создание структуры проекта
-- [x] 6 Milestones и 13 задач созданы
-- [x] GitHub Spec Kit интеграция
-- [x] Анализ структуры Djinni.co
-- [x] Исследование болей пользователей
-- [x] Финализация технической спецификации
+# отдельные стадии
+uv run python -m talentflow.parsers      # только сбор
+uv run python -m talentflow.scorers      # только оценка
+uv run python -m talentflow.generators   # только черновики
+uv run python -m talentflow.evals        # метрики качества скоринга
+```
 
-### Phase 1: MVP (В работе)
-- [ ] Базовая инфраструктура
-- [ ] Парсер Djinni.co
-- [ ] AI анализ через протестированные модели
-- [ ] Генератор откликов
-- [ ] База данных и REST API
+Требуется база: `TALENTFLOW_DATABASE_URL` (по умолчанию `sqlite:///./talentflow.db`).
+Схема создаётся миграциями: `uv run alembic upgrade head`.
 
-**[Полный roadmap — DEVELOPMENT_PLAN.md →](./DEVELOPMENT_PLAN.md)**
+## Переменные окружения
 
----
+Все читаются с префиксом `TALENTFLOW_`, объявлены в `src/talentflow/config.py`.
+Полный список — в `.env.example`.
 
-## 🛠️ Технологический стек
+| Переменная | По умолчанию | Зачем |
+|---|---|---|
+| `TALENTFLOW_DATABASE_URL` | `sqlite:///./talentflow.db` | база; для продакшена — PostgreSQL |
+| `TALENTFLOW_OPENROUTER_API_KEY` | — | первый провайдер в цепочке |
+| `TALENTFLOW_GROQ_API_KEY` | — | запасной провайдер |
+| `TALENTFLOW_LLM_MODELS` | `openrouter:openai/gpt-oss-120b:free` | основная цепочка моделей |
+| `TALENTFLOW_LLM_FALLBACK_MODELS` | `groq:llama-3.3-70b-versatile` | если основная не ответила |
+| `TALENTFLOW_LLM_DAILY_CALL_LIMIT` | `250` | потолок расходов в вызовах |
+| `TALENTFLOW_MIN_LEAD_SCORE` | `0.6` | порог отбора |
+| `TALENTFLOW_HUMAN_IN_THE_LOOP` | `true` | запрет отправки без аппрува |
+| `TALENTFLOW_GROUNDING_CHECK_ENABLED` | `true` | проверка черновика на выдумки |
+| `TALENTFLOW_TELEGRAM_BOT_TOKEN` | — | уведомления |
+| `TALENTFLOW_TELEGRAM_CHAT_ID` | — | куда присылать |
+| `TALENTFLOW_SCHEDULER_ENABLED` | `false` | запуск по расписанию |
+| `TALENTFLOW_SCHEDULER_INTERVAL_MINUTES` | `30` | период расписания |
 
-### Backend
-- **Python 3.11+** — Core language
-- **FastAPI** — Modern async API framework
-- **PostgreSQL** — Primary database
-- **Redis** — Cache & queues
-- **SQLAlchemy 2.0** — ORM
-- **Alembic** — DB migrations
+Без ключей работают сбор, оценка по правилам и демо. Ключ нужен только для
+генерации отклика живой моделью.
 
-### AI/ML (Протестированные решения)
-- **Claude 3.5 Sonnet** — Primary LLM (Anthropic)
-- **GPT-4o-mini** — Fallback LLM (OpenAI)
-- **OpenRouter** — LLM Gateway (1000 free requests/day)
-- **Langchain** — LLM orchestration
-- **Pinecone** — Vector database
+## Стек
 
-### Automation & Integration
-- **GitHub Spec Kit** — GitHub API automation
-- **n8n** — Workflow automation
-- **Linear MCP** — Task management integration
+Реальные зависимости — из `pyproject.toml`:
 
-### Frontend (Планируется)
-- **Next.js 14** — React framework
-- **TypeScript** — Type safety
-- **Tailwind CSS** — Styling
-- **Shadcn/ui** — Component library
-- **Echarts** — Data visualization
+`Python 3.11+` · `FastAPI` · `uvicorn` · `Pydantic` · `pydantic-settings` ·
+`httpx` · `SQLAlchemy 2.0 (asyncio)` · `Alembic` · `APScheduler` ·
+`aiosqlite` / `asyncpg`
 
-### DevOps
-- **Docker** — Containerization
-- **GitHub Actions** — CI/CD
-- **Prometheus** — Monitoring
-- **OpenTelemetry** — Tracing
+Разработка: `pytest`, `pytest-asyncio`, `ruff`, `mypy`.
+Трассировка LLM — опционально (`pip install -e ".[observability]"`, Langfuse).
 
----
+## Тесты
 
-## 🎯 Use Cases
+**293 теста, без сети** — проверено 23.09.2026. Прогон занимает около десяти
+секунд на ноутбуке; точное время зависит от машины, поэтому не приводится
+как характеристика проекта.
 
-### 1. Аутстаф-компании
-Автоматизируйте поиск клиентов через анализ вакансий и генерацию персонализированных предложений.
+```bash
+uv run pytest -q        # 293 passed
+uv run ruff check .     # All checks passed!
+uv run mypy
+```
 
-### 2. Рекрутеры-фрилансеры
-Находите релевантные вакансии и создавайте качественные отклики в 10x меньше времени.
+Тесты не ходят в сеть: `tests/conftest.py` подменяет транспорт, страница Djinni
+берётся из `tests/fixtures/djinni_jobs_page1.html`. Это значит, что тесты
+проверяют логику, но **не** качество модели — для этого есть `evals`.
 
-### 3. HR-агентства
-Масштабируйте лидогенерацию без увеличения команды.
+CI (`.github/workflows/ci.yml`) гоняет lint и тесты на каждый push.
 
----
+## Чего пока нет
 
-## 📊 Протестированные решения
+- **Только Djinni.** LinkedIn и Indeed отложены до фазы 2 через JobSpy;
+  Work.ua не поддержан (`src/talentflow/parsers/__init__.py`).
+- **Автоматической отправки откликов нет** и не планируется без человека:
+  гейт подтверждения — часть замысла, а не временная заглушка.
+- **Нет веб-интерфейса.** Взаимодействие — Telegram и командная строка.
+- **Нет замеров точности скоринга на реальных данных** — каркас evals есть,
+  baseline не снят.
+- **Нет мониторинга доступности и SLA.** Проценты uptime в отчётах не
+  публикуются, потому что измерять их нечем.
 
-### ✅ Linear Server
+## Документация
 
-**Статус:** Полностью настроен и работает
+Полный указатель — [docs/README.md](docs/README.md). Самое нужное:
 
-**Возможности:**
-- Управление задачами из Cline AI
-- Создание и поиск issues
-- Работа с комментариями и milestones
-- Автоматизация workflow
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — слои, поток данных, схема, безопасность
+- [docs/CONCEPT.md](docs/CONCEPT.md) — зачем это и для кого
+- [docs/DEMO.md](docs/DEMO.md) — демо-сценарий
+- [docs/DEPLOY.md](docs/DEPLOY.md) — развёртывание
+- [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) — что работает, чего нет
+- [CONTRIBUTING.md](CONTRIBUTING.md) — как вносить изменения
+- [SECURITY.md](SECURITY.md) — как сообщить об уязвимости
+- [CHANGELOG.md](CHANGELOG.md) — что менялось
 
-**Созданная структура:**
-- 6 Milestones (Phase 0-5)
-- 38 задач с детальным описанием
-- Учебная задача с примерами
+## Лицензия
 
-### ✅ GitHub Spec Kit
-
-**Статус:** Настроен для автоматизации
-
-**Возможности:**
-- Синхронизация Linear → GitHub Issues
-- Автоматическая генерация Release Notes
-- Управление GitHub workflow через API
-- Интеграция с GitHub Actions
-
-### 🧠 AI/ML Экспертиза
-
-**Протестированные модели (25+):**
-- **Claude 3.5 Sonnet** — лучший для анализа требований
-- **GPT-4o-mini** — быстрый fallback
-- **OpenRouter** — unified gateway (1000 free requests/day)
-- **Local Llama 3.1** — cost optimization
-- **15+ дополнительных моделей** для различных задач
-
-**Разработанные алгоритмы:**
-- **Vacancy Analyzer** — извлечение KPIs и болей
-- **Lead Scorer** — приоритизация по conversion potential
-- **Response Generator** — персонализированные отклики
-- **A/B Testing Framework** — оптимизация промптов
-
-### 🔄 В разработке
-
-- **Djinni.co Parser** — парсинг украинских вакансий
-- **Work.ua Parser** — расширение на дополнительный портал
-- **LinkedIn Parser** — международные вакансии (интеграция JobSpy)
-
----
-
-## 📖 Документация
-
-### 🎯 Для бизнеса и клиентов
-- **[Презентация проекта](./docs/CLIENT-PRESENTATION.md)** — ценность, ROI, use cases
-- **[Roadmap](./ROADMAP.md)** — план развития
-- **[Интеграции](./INTEGRATIONS.md)** — Docker, n8n, Instantly.ai, Botpress, голосовые, безопасность, валидация
-
-### 🏗️ Для разработчиков
-- **[Глобальная архитектура](./docs/GLOBAL-ARCHITECTURE.md)** — детальная техническая архитектура
-- **[GitHub Spec Kit интеграция](./docs/GITHUB-SPEC-KIT-INTEGRATION.md)** — автоматизация GitHub workflow
-- **[Структура проекта](./docs/PROJECT-STRUCTURE.md)** — организация кодовой базы
-
-### 🔧 Инструменты и гайды
-- **[Contributing](./CONTRIBUTING.md)** — как внести вклад в проект
-
----
-
-## 🤝 Контрибьюция
-
-Мы приветствуем вклад от сообщества! Вот как вы можете помочь:
-
-1. 🐛 **Репортить баги** через [Issues](https://github.com/FreeAiHub/talentflow-agent/issues)
-2. 💡 **Предлагать фичи** через [Discussions](https://github.com/FreeAiHub/talentflow-agent/discussions)
-3. 📝 **Улучшать документацию**
-4. 🔧 **Создавать Pull Requests**
-
-**[Contributing Guide →](./CONTRIBUTING.md)** (скоро)
-
----
-
-## 🗺️ Roadmap
-
-### Q4 2025 (Ноябрь-Декабрь)
-- ✅ Настройка инфраструктуры
-- ✅ GitHub Spec Kit интеграция
-- ⏳ MVP Djinni.co парсер
-- ⏳ AI Engine (протестированные модели)
-- ⏳ Базовый dashboard
-
-### Q1 2026 (Январь-Март)
-- [ ] Work.ua и LinkedIn парсеры
-- [ ] Advanced analytics
-- [ ] Landing page
-- [ ] Product Hunt launch
-
-### Q2 2026 (Апрель-Июнь)
-- [ ] SaaS монетизация
-- [ ] Mobile app
-- [ ] Multi-language support
-- [ ] Enterprise features
-
-**[Детальный roadmap — DEVELOPMENT_PLAN.md →](./DEVELOPMENT_PLAN.md)**
-
----
-
-## 📞 Контакты и Связь
-
-- **GitHub:** [FreeAiHub/talentflow-agent](https://github.com/FreeAiHub/talentflow-agent)
-- **Issues:** [GitHub Issues](https://github.com/FreeAiHub/talentflow-agent/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/FreeAiHub/talentflow-agent/discussions)
-
----
-
-## 📜 Лицензия
-
-Этот проект распространяется под лицензией MIT. См. файл [LICENSE](./LICENSE) для деталей.
-
----
-
-## 🌟 Поддержите проект
-
-Если вам нравится TalentFlow Agent, поставьте ⭐️!
-
-Это помогает привлечь больше контрибьюторов и улучшить проект.
-
----
-
-<div align="center">
-
-**Сделано с ❤️ by FreeAiHub**
-
-[⬆ Наверх](#-talentflow-agent)
-
-</div>
+MIT — см. [LICENSE](LICENSE).

@@ -1,7 +1,7 @@
 # 🧩 Промпты заданий для агентов
 
 > Готовые шаблоны заданий. Заполняются координатором под конкретный день
-> [`DEVELOPMENT_PLAN.md`](../../DEVELOPMENT_PLAN.md) и передаются субагенту.
+> [`DEVELOPMENT_PLAN.md`](../../docs/DEVELOPMENT_PLAN.md) и передаются субагенту.
 >
 > **Обновлено:** 23.09.2026
 
@@ -24,13 +24,13 @@ OAuth-согласие) — до его подключения шаблоны п
 
 | Файл | Роль | Модель |
 |------|------|--------|
-| [`01-architect.md`](./01-architect.md) | Развилки стека, ADR, схемы данных | `deepseek/deepseek-v4.1-flash` |
-| [`02-builder.md`](./02-builder.md) | Реализация задач дня | `deepseek/deepseek-v4-flash` |
-| [`03-verifier.md`](./03-verifier.md) | Независимая проверка DoD | `deepseek/deepseek-v4.1-flash` |
-| [`04-researcher.md`](./04-researcher.md) | Факты и цены со ссылками | `xiaomi/mimo-v2.5` |
-| [`05-analyst.md`](./05-analyst.md) | Сравнение вариантов, инфраструктура | `qwen/qwen3.8-flash` |
-| [`06-bulk-editor.md`](./06-bulk-editor.md) | Механические правки по репозиторию | `deepseek/deepseek-v4-flash` |
-| [`07-routine.md`](./07-routine.md) | Тесты по шаблону, docstrings, типы | `deepseek/deepseek-v4-flash` |
+| [`01-architect.md`](01-architect.md) | Развилки стека, ADR, схемы данных | `deepseek/deepseek-v4.1-flash` |
+| [`02-builder.md`](02-builder.md) | Реализация задач дня | `deepseek/deepseek-v4-flash` |
+| [`03-verifier.md`](03-verifier.md) | Независимая проверка DoD | `deepseek/deepseek-v4.1-flash` |
+| [`04-researcher.md`](04-researcher.md) | Факты и цены со ссылками | `xiaomi/mimo-v2.5` |
+| [`05-analyst.md`](05-analyst.md) | Сравнение вариантов, инфраструктура | `qwen/qwen3.8-flash` |
+| [`06-bulk-editor.md`](06-bulk-editor.md) | Механические правки по репозиторию | `deepseek/deepseek-v4-flash` |
+| [`07-routine.md`](07-routine.md) | Тесты по шаблону, docstrings, типы | `deepseek/deepseek-v4-flash` |
 
 Полные описания ролей — в [`docs/AGENT-ROSTER.md`](../../docs/AGENT-ROSTER.md),
 правило выбора модели — в [`docs/MODEL-ROTATION.md`](../../docs/MODEL-ROTATION.md).

@@ -4,7 +4,7 @@
 
 > **Режим работы — агентский автопилот.** Человек тратит 15–20 минут в день на
 > приёмку результата и решение по развилкам. Остальное выполняют агенты по
-> протоколу из [`docs/AGENT-ROSTER.md`](./docs/AGENT-ROSTER.md).
+> протоколу из [`docs/AGENT-ROSTER.md`](AGENT-ROSTER.md).
 >
 > **Обновлено:** 23.09.2026. Предыдущая редакция датировалась 30.10.2025 и
 > описывала работу, которой в репозитории не было.
@@ -49,16 +49,16 @@ Djinni → парсинг → дедупликация → БД → LLM-скор
 
 **Что осознанно НЕ делаем в эти 10 дней:** голосовые агенты, RAG, свой
 фронтенд-дашборд, биллинг, мультитенантность. Это фаза 2 — см.
-[`ROADMAP.md`](./ROADMAP.md).
+[`ROADMAP.md`](ROADMAP.md).
 
 ---
 
 ## 🧱 Стек и решения
 
-Выбор обоснован рисерчем от 23.09.2026 — отчёты в [`docs/research/`](./docs/research/).
+Выбор обоснован рисерчем от 23.09.2026 — отчёты в [`docs/research/`](research).
 Пока проверен только слой парсинга: решения по LLM, инфраструктуре и аутричу
 опираются на общие практики, а не на проверенные цифры. Что закрыть и к какому
-дню — в [`docs/research/README.md`](./docs/research/README.md).
+дню — в [`docs/research/README.md`](research/README.md).
 
 | Слой | Решение | Почему |
 |------|---------|--------|
@@ -119,7 +119,7 @@ Djinni → парсинг → дедупликация → БД → LLM-скор
 > JobSpy недостижим. При этом Djinni отдаётся обычным `httpx`: `robots.txt`
 > разрешает `/jobs/`, листинг возвращает `200` и уже содержит ссылки
 > `/jobs/{id}-{slug}/`. Подробности — в
-> [`docs/research/2026-09-23-parsing-stack.md`](./docs/research/2026-09-23-parsing-stack.md).
+> [`docs/research/2026-09-23-parsing-stack.md`](research/2026-09-23-parsing-stack.md).
 
 - [x] **Переписать парсер на `httpx`** вместо адаптера JobSpy. Модуль назван честно — `DjinniParser`; `jobspy_parser.py` удалён
 - [x] Разбор **`application/ld+json`** вместо CSS-селекторов: листинг отдаёт массив `JobPosting` (schema.org) — id, название, компания, URL, **полное описание** и дата. Ключ дедупликации — `identifier`
@@ -182,7 +182,7 @@ Djinni, не вместо него.
 > в сутки**, а конвейеру нужно ~200–250. Допущение «$0 на старте» в этой части
 > неверно: либо разовое пополнение $10 (даёт 1 000 запросов/сутки), либо
 > бесплатный тариф Groq/Cerebras как основной исполнитель. Подробности —
-> в [`docs/research/2026-09-23-llm-stack.md`](./docs/research/2026-09-23-llm-stack.md).
+> в [`docs/research/2026-09-23-llm-stack.md`](research/2026-09-23-llm-stack.md).
 
 - [x] LLM-клиент: OpenRouter как шлюз + **fallback-цепочка** на второго провайдера, structured output в Pydantic-схему `ScoredVacancy`
 - [x] Реализовать `QualityScorer.score()` на промптах `prompts/quality_scorer.md` и `prompts/archetype_matcher.md`
@@ -331,7 +331,7 @@ parse=ok(0)  | score=skipped          → в БД по-прежнему 12
 > умолчанию. Email-аутрич в MVP не берём: Instantly Growth стоит **$47/мес** при
 > общем бюджете ~$50/мес, и это без доменов и прогрева, который занимает недели.
 > Отправку писем переносим в фазу 2. Подробности —
-> в [`docs/research/2026-09-23-outreach-crm.md`](./docs/research/2026-09-23-outreach-crm.md).
+> в [`docs/research/2026-09-23-outreach-crm.md`](research/2026-09-23-outreach-crm.md).
 
 - [x] Telegram-бот: сообщение по лиду выше порога — название, компания, ссылка, скор, обоснование
 - [x] Инлайн-кнопки «Утвердить» / «Отклонить» → те же эндпоинты, что в Дне 6
@@ -373,7 +373,7 @@ parse=ok(0)  | score=skipped          → в БД по-прежнему 12
 > только аренда VPS. Railway Free не подходит: $1 кредита в месяц и **ноль
 > кастомных доменов**. Реальный минимум у Railway — Hobby за $5/мес. Цены VPS
 > ещё не проверены — это первый пункт к уточнению до Дня 9. Подробности —
-> в [`docs/research/2026-09-23-hosting.md`](./docs/research/2026-09-23-hosting.md).
+> в [`docs/research/2026-09-23-hosting.md`](research/2026-09-23-hosting.md).
 
 - [x] Прод-образ: multi-stage, непривилегированный пользователь, без dev-зависимостей
 - [x] PostgreSQL 17 в `docker-compose`, миграции применяются при старте
@@ -505,8 +505,8 @@ JSON. Без этого День 2 был бы написан не с тем и�
 
 ## 🤖 Протокол работы агентов
 
-Полные описания ролей и модели — в [`docs/AGENT-ROSTER.md`](./docs/AGENT-ROSTER.md).
-Готовые промпты заданий — в [`prompts/agents/`](./prompts/agents/).
+Полные описания ролей и модели — в [`docs/AGENT-ROSTER.md`](AGENT-ROSTER.md).
+Готовые промпты заданий — в [`prompts/agents/`](../prompts/agents).
 
 ### Цикл одного дня
 
@@ -610,12 +610,12 @@ DoD: День 2 — 5/5
 
 | Документ | О чём |
 |----------|-------|
-| [`docs/AGENT-ROSTER.md`](./docs/AGENT-ROSTER.md) | Роли агентов, модели, протокол запуска |
-| [`prompts/agents/`](./prompts/agents/) | Готовые промпты заданий для агентов |
-| [`docs/research/`](./docs/research/) | Рисерч стека от 23.09.2026 с источниками |
-| [`ROADMAP.md`](./ROADMAP.md) | Дорожная карта после 10 дней |
-| [`INTEGRATIONS.md`](./INTEGRATIONS.md) | Внешние интеграции |
-| [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Процесс разработки |
+| [`docs/AGENT-ROSTER.md`](AGENT-ROSTER.md) | Роли агентов, модели, протокол запуска |
+| [`prompts/agents/`](../prompts/agents) | Готовые промпты заданий для агентов |
+| [`docs/research/`](research) | Рисерч стека от 23.09.2026 с источниками |
+| [`ROADMAP.md`](ROADMAP.md) | Дорожная карта после 10 дней |
+| [`INTEGRATIONS.md`](INTEGRATIONS.md) | Внешние интеграции |
+| [`CONTRIBUTING.md`](../CONTRIBUTING.md) | Процесс разработки |
 
 ---
 

@@ -71,7 +71,7 @@ JobSpy для LinkedIn и Indeed — фаза 2, отдельным адапте
 
 ### Голос — Vapi
 
-Уже есть мок в [`examples/vapi_integration_mock.py`](./examples/vapi_integration_mock.py)
+Уже есть мок в [`examples/vapi_integration_mock.py`](../examples/vapi_integration_mock.py)
 и вебхук `/webhooks/vapi` **с проверкой секрета**. Цены за минуту не проверены.
 Обоснование отложить не в цене: голосовой агент квалифицирует лида, а лида
 сначала надо получить.
@@ -91,7 +91,7 @@ Cal.com можно поднять self-hosted, что совпадает с об
 
 ## Деплой
 
-Подробная инструкция — в [`DEPLOY.md`](./docs/DEPLOY.md). Коротко:
+Подробная инструкция — в [`DEPLOY.md`](DEPLOY.md). Коротко:
 
 - **Coolify self-hosted** — бесплатен навсегда, платите только за VPS.
   Рекомендуется: оплата уходит хостеру, а не сервису с одними картами.
@@ -121,10 +121,10 @@ Cal.com можно поднять self-hosted, что совпадает с об
 
 ## Ссылки
 
-- [Рисерч по парсингу](./docs/research/2026-09-23-parsing-stack.md) — почему свой парсер
-- [Рисерч по LLM](./docs/research/2026-09-23-llm-stack.md) — лимиты бесплатных тарифов
-- [Рисерч по аутричу](./docs/research/2026-09-23-outreach-crm.md) — что нужно и что нет
-- [Рисерч по хостингу](./docs/research/2026-09-23-hosting.md) — цены и сравнение
+- [Рисерч по парсингу](research/2026-09-23-parsing-stack.md) — почему свой парсер
+- [Рисерч по LLM](research/2026-09-23-llm-stack.md) — лимиты бесплатных тарифов
+- [Рисерч по аутричу](research/2026-09-23-outreach-crm.md) — что нужно и что нет
+- [Рисерч по хостингу](research/2026-09-23-hosting.md) — цены и сравнение
 
 ---
 
