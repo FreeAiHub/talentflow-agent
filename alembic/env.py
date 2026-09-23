@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from talentflow.config import get_settings
 from talentflow.storage.db import to_async_url
-from talentflow.storage.tables import Base
+from talentflow.storage.tables import Base, UTCDateTime
 
 config = context.config
 
@@ -26,6 +26,18 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+
+
+def render_item(type_: str, obj: object, autogen_context: object) -> str | bool:
+    """Render our custom column types as their plain SQLAlchemy equivalent.
+
+    Without this, autogenerate emits ``talentflow.storage.tables.UTCDateTime``
+    and forgets to import it, producing a migration that cannot run. The DDL is
+    identical either way, so the plain type is the better thing to write down.
+    """
+    if type_ == "type" and isinstance(obj, UTCDateTime):
+        return "sa.DateTime(timezone=True)"
+    return False
 
 
 def _async_url() -> str:
@@ -44,6 +56,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
+        render_item=render_item,
     )
 
     with context.begin_transaction():
@@ -55,6 +68,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         compare_type=True,
+        render_item=render_item,
         # SQLite cannot ALTER most things in place; batch mode rewrites the
         # table instead, so migrations behave the same on SQLite and Postgres.
         render_as_batch=connection.dialect.name == "sqlite",

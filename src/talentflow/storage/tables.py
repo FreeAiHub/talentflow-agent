@@ -159,3 +159,54 @@ class RunRow(Base):
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"<RunRow {self.id} {self.kind} {self.status}>"
+
+
+class LlmCallRow(Base):
+    """One LLM request, successful or not.
+
+    Serves three purposes at once: the daily call budget is counted from here,
+    cost per vacancy is summed from here, and a failed run can be explained
+    from here. Recording failures matters as much as successes — a provider
+    that answers 429 all day should be visible, not inferred.
+    """
+
+    __tablename__ = "llm_calls"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    model: Mapped[str] = mapped_column(String(128), nullable=False)
+    #: Which logical task this call served: ``score``, ``generate``.
+    purpose: Mapped[str] = mapped_column(String(32), nullable=False, default="unknown")
+    prompt_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    ok: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    tokens_in: Mapped[int] = mapped_column(nullable=False, default=0)
+    tokens_out: Mapped[int] = mapped_column(nullable=False, default=0)
+    #: Cost in USD as reported by the provider; zero for free tiers.
+    cost_usd: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    latency_ms: Mapped[int] = mapped_column(nullable=False, default=0)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    called_at: Mapped[datetime] = mapped_column(
+        UTCDateTime(), nullable=False, default=utcnow, index=True
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover - debugging aid
+        return f"<LlmCallRow {self.model} ok={self.ok} {self.latency_ms}ms>"
+
+
+class LlmCacheRow(Base):
+    """A cached model response, keyed by model and prompt.
+
+    Scoring the same vacancy twice should cost nothing. The key includes the
+    model because two models given the same prompt are not interchangeable.
+    """
+
+    __tablename__ = "llm_cache"
+
+    #: SHA-256 of ``model + "\\x00" + prompt``.
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    model: Mapped[str] = mapped_column(String(128), nullable=False)
+    response: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False, default=utcnow)
+
+    def __repr__(self) -> str:  # pragma: no cover - debugging aid
+        return f"<LlmCacheRow {self.model} {self.key[:8]}>"
