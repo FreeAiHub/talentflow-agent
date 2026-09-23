@@ -13,7 +13,7 @@ dependencies = [
 
 [dependency-groups]
 # PEP 735 dev group: installed by `uv sync` automatically (no --extra needed).
-dev = ["pytest>=8", "ruff>=0.7"]
+dev = ["pytest>=8", "ruff>=0.7", "mypy>=1.13"]
 
 [build-system]
 requires = ["hatchling"]
@@ -45,3 +45,10 @@ select = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src", "tests"]
+check_untyped_defs = true
+warn_unused_ignores = true
+
