@@ -10,7 +10,7 @@ class Vacancy(BaseModel):
     title: str
     company: str
     url: HttpUrl | None = None
-    source: str = "jobspy"
+    source: str = "djinni"
     description: str = ""
     posted_at: datetime | None = None
 
