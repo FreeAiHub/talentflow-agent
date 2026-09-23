@@ -96,7 +96,7 @@ Djinni → парсинг → дедупликация → БД → LLM-скор
 - [x] Закрыть дыру: **`.env` отсутствует в `.gitignore`** — первый же реальный ключ может уехать в публичный репозиторий. Добавить `.env`, `.venv/`, кэши инструментов, локальные БД
 - [x] Завести `tests/` и первый тест — `/health` возвращает `{"status": "ok"}`
 - [x] Добавить в `pyproject.toml` конфигурацию ruff и pytest
-- [x] Расширить CI: `ruff check`, `ruff format --check`, `mypy`, `pytest` с покрытием
+- [x] Расширить CI: `ruff check`, `ruff format --check`, `mypy`, `pytest` *(покрытие не добавляли: одна тестовая функция, `pytest-cov` пока нечего измерять)*
 - [x] Закрыть расхождение `CONTRIBUTING.md` с реальностью: либо добавить lock-файл uv, либо переписать инструкцию
 - [x] Зафиксировать план и роли агентов: `DEVELOPMENT_PLAN.md`, `docs/AGENT-ROSTER.md`, `prompts/agents/`
 
