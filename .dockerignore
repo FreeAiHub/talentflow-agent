@@ -6,3 +6,10 @@ __pycache__/
 node_modules/
 docs/
 materials/
+backups/
+tests/
+.github/
+prompts/agents/
+scripts/
+*.md
+!README.md
