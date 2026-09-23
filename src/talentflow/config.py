@@ -17,6 +17,15 @@ DEFAULT_ICP_PROFILE = (
     "агентство. Удалённая работа или Украина."
 )
 
+#: Placeholder sender profile. The generator may not invent achievements, so an
+#: empty or generic profile here produces generic letters. Fill this in with the
+#: company's real positioning and verifiable experience before sending anything.
+DEFAULT_SENDER_PROFILE = (
+    "IT-аутстафф компания. Собираем команды под задачи клиента: backend, "
+    "frontend, QA, DevOps, data. Работаем с украинскими и европейскими "
+    "клиентами. [ЗАПОЛНИТЬ: конкретные проекты, отрасли, измеримые результаты]"
+)
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="TALENTFLOW_", env_file=".env", extra="ignore")
@@ -51,6 +60,21 @@ class Settings(BaseSettings):
     #: Used to judge whether a vacancy is worth pursuing. Replace with the real
     #: profile before trusting any score.
     icp_profile: str = DEFAULT_ICP_PROFILE
+
+    # --- Outreach ----------------------------------------------------------
+    #: Who the outreach is sent as. The generator may not invent achievements,
+    #: so anything absent here is simply absent from the letter — a generic
+    #: profile produces cautious, generic drafts.
+    sender_profile: str = DEFAULT_SENDER_PROFILE
+    #: Closing call to action. Kept out of the prompt file so the link can
+    #: change without editing prose.
+    cta: str = "Reply with a time that suits you."
+
+    #: Run the fact-checking pass over every draft. Off means one fewer LLM call
+    #: per draft, at the cost of possibly sending invented claims.
+    grounding_check_enabled: bool = True
+    #: A draft the checker calls ``reject`` must not become sendable.
+    grounding_reject_is_fatal: bool = True
 
     # --- Observability -----------------------------------------------------
     # Optional: traces are only sent when all three are present.
