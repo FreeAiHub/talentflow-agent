@@ -30,6 +30,7 @@
 | Документ | О чём |
 |---|---|
 | [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) | десятидневный план и его выполнение |
+| [CASE.md](CASE.md) | разбор: что нашёл первый живой прогон и где продукт слабее, чем выглядел |
 | [AGENT-ROSTER.md](AGENT-ROSTER.md) | роли агентов в разработке |
 | [MODEL-ROTATION.md](MODEL-ROTATION.md) | выбор моделей по цене и качеству |
 | [EVAL-BASELINE.md](EVAL-BASELINE.md) | baseline качества скоринга |
