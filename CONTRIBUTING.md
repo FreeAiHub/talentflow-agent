@@ -289,7 +289,7 @@ TIMEOUT = 30
 uv run python -c "import talentflow.models, talentflow.parsers.djinni"
 ```
 
-### JavaScript/TypeScript
+### JavaScript/TypeScript: в проекте нет
 
 В этом репозитории нет JavaScript/TypeScript: `git ls-files` не показывает ни
 одного `.js`/`.ts`-файла, нет `package.json`, и ни CI не вызывает `npm`, ни
@@ -303,7 +303,7 @@ Prettier/ESLint описывал фронтенд, которого в прое�
 ### Чеклист перед созданием PR
 
 - [ ] Код следует нашим стандартам
-- [ ] Все тесты проходят (`pytest tests/`)
+- [ ] Все тесты проходят (`uv run pytest -q`)
 - [ ] Добавлены новые тесты для новой функциональности
 - [ ] Документация обновлена
 - [ ] Нет конфликтов с `main` веткой
@@ -470,7 +470,9 @@ async def test_health_returns_ok_and_version(api_client: httpx.AsyncClient) -> N
     assert response.json() == {"status": "ok", "version": "0.1.0"}
 ```
 
-Это дословно `tests/test_health.py`; сигнатуры остальных маршрутов смотрите в
+Это тот же контракт, что проверяет `tests/test_health.py`: там ожидаемое тело
+ответа лежит константой `EXPECTED_HEALTH_BODY`, а не литералом, и меняется
+вместе с версией. Сигнатуры остальных маршрутов смотрите в
 `src/talentflow/api/main.py` и их тестах в `tests/test_storage.py`.
 
 ### Покрытие тестами
