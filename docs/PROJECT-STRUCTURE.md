@@ -21,7 +21,6 @@ talentflow-agent/
 ├── prompts/                         промпты и роли агентов
 ├── scripts/                         служебные скрипты
 ├── data/                            справочник моделей OpenRouter
-├── examples/                        примеры интеграций
 └── .github/                         CI, шаблоны issue и PR
 ```
 
