@@ -35,6 +35,17 @@ logger = logging.getLogger(__name__)
 #: JSON is sometimes wrapped in a fenced code block despite instructions.
 _FENCE = re.compile(r"^\s*```(?:json)?\s*(.*?)\s*```\s*$", re.DOTALL)
 
+#: Appended to the prompt when a first reply carried no usable JSON. The model is
+#: shown its own answer so the second attempt continues from the thinking it
+#: already did instead of starting over.
+REPAIR_SUFFIX = (
+    "\n\n---\n\n"
+    "Your previous reply was not a JSON object, so it could not be used. "
+    "Reply again with the JSON object alone: no explanation, no reasoning, "
+    "no markdown fence, nothing before or after it.\n\n"
+    "Your previous reply was:\n\n{previous}\n"
+)
+
 
 @dataclass(frozen=True)
 class Provider:
@@ -202,9 +213,28 @@ class LLMClient:
         raise LlmError("every provider failed — " + "; ".join(errors))
 
     async def complete_json(self, prompt: str, *, system: str | None = None) -> Any:
-        """Like :meth:`complete`, but parse the answer as JSON."""
+        """Like :meth:`complete`, but parse the answer as JSON.
+
+        Free models answer without JSON often enough to matter: a reasoning model
+        can spend the whole reply thinking out loud and never emit an object, and
+        ``response_format`` is a request, not a guarantee. Rather than pick a
+        model that behaves and hope it keeps behaving, a reply that does not
+        parse is shown back to the model once with a request to answer again.
+        The retry is a different prompt, so it is a separate cache entry and a
+        separate call against the budget — it only happens on failure.
+        """
         result = await self.complete(prompt, system=system)
-        return extract_json(result.text)
+        try:
+            return extract_json(result.text)
+        except LlmResponseInvalid as invalid:
+            logger.warning(
+                "Model %s answered without usable JSON (%s); asking once more",
+                result.model,
+                invalid,
+            )
+            retry = prompt + REPAIR_SUFFIX.format(previous=result.text[:4000])
+            second = await self.complete(retry, system=system)
+            return extract_json(second.text)
 
     async def _call_provider(
         self, provider: Provider, model: str, prompt: str, system: str | None

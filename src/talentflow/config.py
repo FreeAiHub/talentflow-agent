@@ -135,6 +135,19 @@ class Settings(BaseSettings):
         return bool(self.telegram_bot_token and self.telegram_chat_id)
 
     @property
+    def sender_profile_is_placeholder(self) -> bool:
+        """True while the sender profile still admits it has not been filled in.
+
+        Square brackets are the marker the generator prompt treats as "not a
+        fact yet, leave it out", so the same test says whether a first run can
+        produce anything the grounding check will accept. Without this warning a
+        fresh clone drafts letters, sees every one rejected as fabricated, and
+        has no way to tell that the cause is an empty profile rather than a
+        broken pipeline.
+        """
+        return "[" in self.sender_profile
+
+    @property
     def langfuse_enabled(self) -> bool:
         return bool(self.langfuse_public_key and self.langfuse_secret_key)
 

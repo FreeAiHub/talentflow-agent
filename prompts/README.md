@@ -1,21 +1,39 @@
-# Prompts for TalentFlow Agent
+# Промпты конвейера
 
-This directory contains carefully engineered prompts for the AI core. Prompts are organized by module and stage of the workflow.
+Здесь лежат три промпта, которые код действительно загружает. Имя файла — это то,
+что передаётся в `load_prompt()`: переименование без правки кода ломает вызов.
 
-## Structure
-- `vacancy_analyzer.md`: Extracts pain points, KPIs, tech stack from job descriptions.
-- `archetype_matcher.md`: Matches vacancy to specialist archetypes.
-- `response_generator.md`: Generates personalized cover letters/responses.
-- `quality_scorer.md`: Evaluates response quality and relevance.
+| Файл | Кто загружает | Зачем |
+|---|---|---|
+| `vacancy_scorer.md` | `scorers/quality_scorer.py` | оценивает вакансию по ICP: оценка 0..1, причины и сигналы |
+| `response_generator.md` | `generators/response.py` | пишет черновик первого письма |
+| `grounding_checker.md` | `generators/response.py` | второй проход по черновику: ищет утверждения, которых нет ни в вакансии, ни в профиле отправителя |
 
-## Usage Guidelines
-- Use Claude 3.5 Sonnet or GPT-4o-mini as primary models.
-- Always include vacancy text, candidate profile, and RAG context.
-- Temperature: 0.3-0.5 for consistency.
-- Max tokens: 2000 for analysis, 1500 for generation.
+## Как они устроены
 
-## Prompt Engineering Principles
-- Chain-of-Thought (CoT) for analysis.
-- Few-shot examples for high fidelity.
-- JSON output for structured extraction.
-- Human-like tone for responses.
+- Плейсхолдеры `{имя}` подставляет `render()`. Незаданный плейсхолдер — это
+  `KeyError`, а не пустая строка: промпт падает громко, а не уходит в модель
+  с дырой в середине. Фигурные скобки JSON при этом не трогаются.
+- Все три требуют ответа строго в JSON. Это просьба, а не гарантия: бесплатные
+  модели её иногда игнорируют и пишут рассуждения. Клиент разбирает ответ и один
+  раз переспрашивает, показав модели её же текст (`LLMClient.complete_json`).
+- Свой каталог промптов задаётся `TALENTFLOW_PROMPTS_DIR`.
+
+## Правило проекта
+
+Промпт — такой же артефакт, как код: он лежит в репозитории, версионируется и
+проверяется прогоном. Меняешь промпт — прогони скоринг или генерацию и посмотри,
+что изменилось. «Стало лучше» без прогона не принимается:
+
+```bash
+uv run python -m talentflow.scorers --limit 5     # оценка
+uv run python -m talentflow.generators --limit 3  # черновики и проверка на выдумки
+```
+
+## Исторические файлы
+
+`vacancy_analyzer.md`, `archetype_matcher.md`, `quality_scorer.md` и
+`jev-vacancy-scoring.md` остались от прежней сервисной архитектуры — код их не
+загружает, править их бессмысленно. `agents/` — шаблоны заданий для агентов,
+которые писали проект (см. [AGENT-ROSTER.md](../docs/AGENT-ROSTER.md)); к работе
+конвейера они отношения не имеют.

@@ -416,6 +416,52 @@ async def test_complete_json_parses_the_answer(session: AsyncSession) -> None:
     assert payload == {"score": 0.8}
 
 
+async def test_complete_json_asks_again_when_the_reply_is_prose(
+    session: AsyncSession,
+) -> None:
+    """A reasoning model can spend the whole reply thinking and never emit JSON.
+
+    The second call must carry the model's own answer back to it: the thinking
+    is already done, and starting over from the bare prompt tends to reproduce
+    the same prose.
+    """
+    bodies: list[dict[str, Any]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        bodies.append(body)
+        if len(bodies) == 1:
+            return httpx.Response(200, json=completion("Let me think about this vacancy."))
+        return httpx.Response(200, json=json_completion({"score": 0.8}))
+
+    async with client_for(handler) as http:
+        client = LLMClient(session, settings=settings_with(), client=http)
+        payload = await client.complete_json("rate this")
+
+    assert payload == {"score": 0.8}
+    assert len(bodies) == 2
+    retry_prompt = bodies[1]["messages"][-1]["content"]
+    assert retry_prompt.startswith("rate this")
+    assert "Let me think about this vacancy." in retry_prompt
+
+
+async def test_complete_json_gives_up_after_one_retry(session: AsyncSession) -> None:
+    """Two prose replies in a row is a broken model, not something to retry forever."""
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(200, json=completion("Still thinking out loud."))
+
+    async with client_for(handler) as http:
+        client = LLMClient(session, settings=settings_with(), client=http)
+        with pytest.raises(LlmResponseInvalid):
+            await client.complete_json("rate this")
+
+    assert calls == 2
+
+
 async def test_system_message_is_sent_when_given(session: AsyncSession) -> None:
     captured: dict[str, Any] = {}
 

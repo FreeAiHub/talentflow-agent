@@ -189,6 +189,13 @@ async def run_generate(
     if not todo:
         return 0
 
+    if settings.sender_profile_is_placeholder:
+        logger.warning(
+            "Sender profile is still the shipped placeholder: the generator has no "
+            "verifiable experience to cite, so every draft will be blocked by the "
+            "grounding check. Set TALENTFLOW_SENDER_PROFILE to draft anything sendable."
+        )
+
     generator = ResponseGenerator(
         LLMClient(session, settings=settings, purpose="generate"), settings=settings
     )

@@ -111,10 +111,14 @@ talentflow-agent/
 
 ## `prompts/`
 
-Рабочие промпты конвейера (`vacancy_analyzer.md`, `vacancy_scorer.md`,
-`quality_scorer.md`, `response_generator.md`, `archetype_matcher.md`,
-`grounding_checker.md`, `jev-vacancy-scoring.md`) и `agents/` — семь ролей
-процесса разработки с описанием ротации.
+Три промпта, которые код загружает: `vacancy_scorer.md` (оценка вакансии),
+`response_generator.md` (черновик письма) и `grounding_checker.md` (проверка
+черновика на выдумки). Остальные `.md` здесь — от прежней сервисной
+архитектуры, код их не читает; подробности и причины — в
+[prompts/README.md](../prompts/README.md).
+
+`agents/` — семь ролей процесса разработки с описанием ротации
+([AGENT-ROSTER.md](AGENT-ROSTER.md)); к работе конвейера они отношения не имеют.
 
 ## `scripts/`
 
