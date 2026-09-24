@@ -74,18 +74,24 @@
 
 ## Как запускается
 
-Изоляция рабочей копии (пример для issue #28):
+Изоляция рабочей копии — скриптом, а не руками: руками легко создать копию от
+устаревшего локального `main`, и тогда diff агента будет содержать чужие
+изменения.
 
 ```bash
-cd /Users/investing/GitHub/talentflow-agent
-git worktree add -b fix/28-contributing /Users/investing/GitHub/tf-wt-28 main
+scripts/agent_worktree.sh 40 parsers-save
+# каталог: /Users/investing/GitHub/tf-wt-40
+# ветка:   fix/40-parsers-save (от origin/main)
 ```
+
+Скрипт проверяет аргументы, берёт ветку от `origin/main` и печатает напоминание:
+push и мерж делает координатор, исполнитель только коммитит в свою ветку.
 
 Задание агенту:
 
 ```python
 subagent(
-    description="Развести CONTRIBUTING (#28)",
+    description="CONTRIBUTING привести к фактам (#36)",
     prompt=<содержимое prompts/agents/08-repo-keeper.md с заполненными полями>,
     provider="openrouter",
     model="deepseek/deepseek-v4-flash-0731",
