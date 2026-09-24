@@ -26,7 +26,7 @@ OAuth-согласие) — до его подключения шаблоны п
 |------|------|--------|
 | [`01-architect.md`](01-architect.md) | Развилки стека, ADR, схемы данных | `deepseek/deepseek-v4.1-flash` |
 | [`02-builder.md`](02-builder.md) | Реализация задач дня | `deepseek/deepseek-v4-flash-0731` |
-| [`03-verifier.md`](03-verifier.md) | Независимая проверка DoD | `z-ai/glm-5.3-flash` |
+| [`03-verifier.md`](03-verifier.md) | Независимая проверка DoD | `z-ai/glm-5.3` |
 | [`04-researcher.md`](04-researcher.md) | Факты и цены со ссылками | `xiaomi/mimo-v2.5` |
 | [`05-analyst.md`](05-analyst.md) | Сравнение вариантов, инфраструктура | `qwen/qwen3.8-flash` |
 | [`06-bulk-editor.md`](06-bulk-editor.md) | Механические правки по репозиторию | `deepseek/deepseek-v4-flash-0731` |
