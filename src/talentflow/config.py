@@ -46,7 +46,17 @@ class Settings(BaseSettings):
 
     #: Primary model, then fallbacks in order. Comma-separated so the whole
     #: chain is one environment variable.
-    llm_models: str = "openrouter:openai/gpt-oss-120b:free"
+    #:
+    #: Free slugs on OpenRouter are retired without notice. The previous
+    #: default (``openai/gpt-oss-120b:free``) began answering ``404 This model
+    #: is unavailable for free`` on 2026-09-24, which made the scoring stage
+    #: fail for anyone who cloned the repository. This slug was verified by a
+    #: live run on that date: five real Djinni vacancies scored, ranking made
+    #: sense, 16-33 s per call. If it breaks the same way, list the live free
+    #: models with ``GET https://openrouter.ai/api/v1/models`` (zero prompt and
+    #: completion price) and check the candidate answers a request carrying
+    #: ``response_format={"type": "json_object"}``, which the client sends.
+    llm_models: str = "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free"
     llm_fallback_models: str = "groq:llama-3.3-70b-versatile"
 
     llm_timeout_seconds: float = 60.0

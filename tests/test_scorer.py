@@ -16,7 +16,7 @@ from talentflow.config import DEFAULT_ICP_PROFILE, Settings
 from talentflow.llm.client import LlmResult
 from talentflow.llm.errors import LlmError
 from talentflow.llm.prompts import PromptNotFound, load_prompt, render, render_prompt
-from talentflow.models import Vacancy
+from talentflow.models import ScoredVacancy, Vacancy
 from talentflow.scorers import QualityScorer, parse_payload
 
 VALID_ANSWER = {
@@ -194,6 +194,36 @@ async def test_score_preserves_the_original_vacancy_fields() -> None:
     assert outcome.vacancy.company == "Globex"
     assert outcome.vacancy.title == "QA Lead"
     assert outcome.vacancy.source == "djinni"
+
+
+async def test_score_accepts_an_already_scored_vacancy() -> None:
+    """The scorer is fed ``ScoredVacancy`` rows, not bare ``Vacancy`` ones.
+
+    ``list_vacancies`` returns scored rows so callers can tell "not scored yet"
+    from "scored badly". Regression: the result was built with
+    ``**vacancy.model_dump()``, which already carried ``score``, so the live
+    pipeline died with ``TypeError: got multiple values for keyword argument
+    'score'`` while every test that passed a plain ``Vacancy`` stayed green.
+    """
+    scorer = QualityScorer(StubClient(), settings=Settings())
+    stored = ScoredVacancy(**vacancy("42").model_dump(), score=0.0, reasons=[])
+
+    outcome = await scorer.score(stored)
+
+    assert outcome.score == 0.82
+    assert outcome.vacancy.id == "42"
+    assert outcome.vacancy.reasons == VALID_ANSWER["reasons"]
+
+
+async def test_score_overwrites_a_stale_score_from_the_database() -> None:
+    """A previous score on the row must not leak into the new outcome."""
+    scorer = QualityScorer(StubClient(), settings=Settings())
+    stored = ScoredVacancy(**vacancy("7").model_dump(), score=0.1, reasons=["старое"])
+
+    outcome = await scorer.score(stored)
+
+    assert outcome.score == 0.82
+    assert outcome.vacancy.reasons == VALID_ANSWER["reasons"]
 
 
 async def test_score_raises_when_the_model_is_unusable() -> None:

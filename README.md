@@ -94,7 +94,7 @@ uv run python -m talentflow.evals        # метрики качества ск�
 | `TALENTFLOW_DATABASE_URL` | `sqlite:///./talentflow.db` | база; для продакшена — PostgreSQL |
 | `TALENTFLOW_OPENROUTER_API_KEY` | — | первый провайдер в цепочке |
 | `TALENTFLOW_GROQ_API_KEY` | — | запасной провайдер |
-| `TALENTFLOW_LLM_MODELS` | `openrouter:openai/gpt-oss-120b:free` | основная цепочка моделей |
+| `TALENTFLOW_LLM_MODELS` | `openrouter:nvidia/nemotron-3-ultra-550b-a55b:free` | основная цепочка моделей |
 | `TALENTFLOW_LLM_FALLBACK_MODELS` | `groq:llama-3.3-70b-versatile` | если основная не ответила |
 | `TALENTFLOW_LLM_DAILY_CALL_LIMIT` | `250` | потолок расходов в вызовах |
 | `TALENTFLOW_MIN_LEAD_SCORE` | `0.6` | порог отбора |

@@ -120,8 +120,14 @@ class QualityScorer:
                 MIN_EXPECTED_REASONS,
             )
 
+        # ``vacancy`` may already be a ScoredVacancy: ``list_vacancies`` returns
+        # scored rows so that callers can tell "not scored yet" from "scored
+        # badly". Its dump therefore already carries ``score`` and ``reasons``,
+        # and passing them again would be a duplicate keyword argument. The two
+        # fields the model just produced win, so they are excluded from the dump
+        # rather than trusted from the input.
         scored = ScoredVacancy(
-            **vacancy.model_dump(),
+            **vacancy.model_dump(exclude={"score", "reasons"}),
             score=payload.score,
             reasons=payload.reasons,
         )

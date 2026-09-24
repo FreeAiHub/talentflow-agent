@@ -95,7 +95,7 @@ Every setting is read with the `TALENTFLOW_` prefix and declared in
 | `TALENTFLOW_DATABASE_URL` | `sqlite:///./talentflow.db` | storage; PostgreSQL in production |
 | `TALENTFLOW_OPENROUTER_API_KEY` | — | first provider in the chain |
 | `TALENTFLOW_GROQ_API_KEY` | — | fallback provider |
-| `TALENTFLOW_LLM_MODELS` | `openrouter:openai/gpt-oss-120b:free` | primary model chain |
+| `TALENTFLOW_LLM_MODELS` | `openrouter:nvidia/nemotron-3-ultra-550b-a55b:free` | primary model chain |
 | `TALENTFLOW_LLM_FALLBACK_MODELS` | `groq:llama-3.3-70b-versatile` | used when the primary fails |
 | `TALENTFLOW_LLM_DAILY_CALL_LIMIT` | `250` | spend ceiling in calls |
 | `TALENTFLOW_MIN_LEAD_SCORE` | `0.6` | shortlist threshold |
