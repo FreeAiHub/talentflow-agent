@@ -34,15 +34,19 @@
 - Подробным описанием проблемы
 - Шагами для воспроизведения
 - Ожидаемым и фактическим поведением
-- Версией Python/Node.js
+- Версией Python (`uv run python --version`)
 - Логами (если возможно)
 
 ### ✨ Предложить фичу
 
-Есть идея улучшения? Создайте [Feature Request](https://github.com/FreeAiHub/talentflow-agent/issues/new?template=feature_request.md) с:
+Есть идея улучшения? Создайте [Issue](https://github.com/FreeAiHub/talentflow-agent/issues/new) с:
 - Четким описанием проблемы, которую решает фича
 - Предлагаемым решением
 - Альтернативными подходами (опционально)
+
+> Примечание: готового шаблона «Feature Request» в репозитории нет
+> (в `.github/ISSUE_TEMPLATE/` лежит только `bug_report.md`), поэтому фичи
+> заводятся через общую форму Issue.
 
 ### 📝 Улучшить документацию
 
@@ -68,7 +72,7 @@
 
 - **путём к файлу** — `src/talentflow/parsers/djinni.py`;
 - **именем теста** — `tests/test_djinni_parser.py`;
-- **командой и её выводом** — `uv run pytest -q` → `293 passed`.
+- **командой и её выводом** — `uv run pytest -q` → `297 passed` (замер: 24.09.2026).
 
 Чего делать нельзя:
 
@@ -208,96 +212,89 @@ uv run mypy
 
 #### Type Hints
 
-Обязательно используйте type hints:
+Обязательно используйте type hints. Реальные доменные типы живут в
+`talentflow.models` — `Vacancy`, `ScoredVacancy`, `ApplicationResponse`:
 
 ```python
+from talentflow.models import Vacancy
+
 # ✅ Хорошо
-def parse_vacancy(url: str) -> dict[str, Any]:
-    """Parse vacancy from URL."""
-    pass
+def parse_vacancy(vacancy: Vacancy) -> dict[str, str]:
+    """Pack a vacancy into an outgoing payload."""
+    return {"id": vacancy.id, "title": vacancy.title}
 
 # ❌ Плохо
-def parse_vacancy(url):
-    pass
+def parse_vacancy(vacancy):
+    return {}  # тип утерян, IDE и mypy не помогут
 ```
+
+Какие доменные типы реально существуют — смотрите `uv run python -c
+"import talentflow.models"` или grep по `src/talentflow/models.py`.
 
 #### Docstrings
 
 Используйте Google-style docstrings:
 
 ```python
-def analyze_vacancy(vacancy: dict[str, Any]) -> AnalysisResult:
+from talentflow.models import ScoredVacancy
+
+def score_vacancy(vacancy: Vacancy) -> ScoredVacancy:
     """
-    Analyze vacancy using AI.
+    Score a vacancy.
 
     Args:
-        vacancy: Vacancy data dictionary
+        vacancy: The vacancy to score.
 
     Returns:
-        Analysis result with scores and insights
+        A vacancy with a ``score`` in [0, 1], a ``reasons`` list, or defaults.
 
     Raises:
-        ValueError: If vacancy data is invalid
+        ValueError: If vacancy data is invalid.
     """
-    pass
+    ...
 ```
 
 #### Структура кода
 
-```python
-# Импорты
-import os
-from typing import Any
+Импортируйте из пакета `talentflow` (в каталоге `src/`), а не по плоским путям
+`src.database` / `src.utils` / `src.api` — их в проекте нет, `grep -rn`
+не найдёт их ни в одном файле.
 
-from fastapi import FastAPI
+```python
+"""Модуль-пример: порядок импортов и констант в файле проекта."""
+
+# Стандартная библиотека
+import logging
+
+# Сторонние
 from sqlalchemy import select
 
-from src.database.models import Vacancy
-from src.utils.logger import logger
+# Проект — всегда с корнем `talentflow.` и с публичного пути пакета, а не из
+# внутреннего подмодуля (`storage.db` — внутренний; импортируйте из `storage`).
+from talentflow.models import Vacancy
+from talentflow.storage import get_session
+
+# Логгер — как принято в проекте, через logging.getLogger; модуля
+# `talentflow.utils.logger` не существует.
+logger = logging.getLogger(__name__)
 
 # Константы
 MAX_RETRIES = 3
 TIMEOUT = 30
-
-# Классы и функции
-class VacancyParser:
-    """Vacancy parser implementation."""
-    pass
 ```
 
-### JavaScript/TypeScript
-
-#### Форматирование
-
-Мы используем **Prettier** и **ESLint**:
+Проверить, что импорт корректен, можно до написания кода:
 
 ```bash
-# Форматирование
-npm run format
-
-# Проверка
-npm run lint
+uv run python -c "import talentflow.models, talentflow.parsers.djinni"
 ```
 
-#### Стиль
+### JavaScript/TypeScript: в проекте нет
 
-```typescript
-// ✅ Хорошо
-interface VacancyData {
-  id: string;
-  title: string;
-  company: string;
-}
-
-const parseVacancy = async (url: string): Promise<VacancyData> => {
-  // ...
-};
-
-// ❌ Плохо
-const parseVacancy = (url) => {
-  // ...
-};
-```
+В этом репозитории нет JavaScript/TypeScript: `git ls-files` не показывает ни
+одного `.js`/`.ts`-файла, нет `package.json`, и ни CI не вызывает `npm`, ни
+документация на него не ссылается. Весь код — Python. Прежний раздел про
+Prettier/ESLint описывал фронтенд, которого в проекте нет, поэтому удалён.
 
 ---
 
@@ -306,7 +303,7 @@ const parseVacancy = (url) => {
 ### Чеклист перед созданием PR
 
 - [ ] Код следует нашим стандартам
-- [ ] Все тесты проходят (`pytest tests/`)
+- [ ] Все тесты проходят (`uv run pytest -q`)
 - [ ] Добавлены новые тесты для новой функциональности
 - [ ] Документация обновлена
 - [ ] Нет конфликтов с `main` веткой
@@ -417,54 +414,84 @@ uv run pytest -v
 
 #### Unit тесты
 
+Пишите тесты в стиле `tests/test_djinni_parser.py`. Парсеры — асинхронные, их
+публичный метод — `collect()`, возвращающий `list[Vacancy]`; метода `parse()`
+нет, как нет и сети в тестах: вместо неё — `httpx.MockTransport`.
+
 ```python
-import pytest
-from src.parsers.djinni import DjinniParser
+from pathlib import Path
 
-def test_parse_vacancy_success():
-    """Test successful vacancy parsing."""
-    parser = DjinniParser()
-    result = parser.parse("https://djinni.co/jobs/12345")
-    
-    assert result["title"] is not None
-    assert result["company"] is not None
-    assert "salary" in result
+import httpx
 
-def test_parse_vacancy_invalid_url():
-    """Test parsing with invalid URL."""
-    parser = DjinniParser()
-    
-    with pytest.raises(ValueError):
-        parser.parse("invalid-url")
+from talentflow.models import Vacancy
+from talentflow.parsers.djinni import DjinniParser
+
+FIXTURE = Path(__file__).parent / "fixtures" / "djinni_jobs_page1.html"
+
+
+def _client(handler):
+    return httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+
+async def test_collect_parses_a_recorded_listing_page() -> None:
+    async def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text=FIXTURE.read_text(encoding="utf-8"))
+
+    parser = DjinniParser(client=_client(handler), request_delay=0, backoff_base=0)
+    vacancies = await parser.collect()
+
+    assert isinstance(vacancies, list)
+    assert all(isinstance(v, Vacancy) for v in vacancies)
+    assert vacancies[0].title  # непустой заголовок первой вакансии
 ```
+
+Полный эталон — `tests/test_djinni_parser.py`: там 15+ тестов на сбор
+(пагинация, дедупликация, rate-limit, обрывы сети) с использованием записанной
+HTML-страницы из `tests/fixtures/`.
 
 #### Integration тесты
 
+API тестируется через `httpx.AsyncClient` с `ASGITransport` и фикстуру
+`api_client` из `tests/conftest.py`, а не через `TestClient` — тело теста и сессия
+БД живут в одном event loop. Реальные маршруты: `GET /health`, `GET
+/api/v1/vacancies`, `GET /api/v1/applications`, `POST
+/api/v1/applications/{id}/approve|reject`, `GET /api/v1/stats`, вебхуки
+`POST /webhooks/telegram` и `POST /webhooks/vapi`. Эндпоинта `POST
+/api/v1/vacancies` нет.
+
 ```python
-import pytest
-from fastapi.testclient import TestClient
-from src.api.main import app
+import httpx
 
-client = TestClient(app)
 
-def test_create_vacancy():
-    """Test vacancy creation endpoint."""
-    response = client.post(
-        "/api/v1/vacancies",
-        json={
-            "url": "https://djinni.co/jobs/12345",
-            "source": "djinni"
-        }
-    )
-    
-    assert response.status_code == 201
-    assert "id" in response.json()
+async def test_health_returns_ok_and_version(api_client: httpx.AsyncClient) -> None:
+    response = await api_client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "version": "0.1.0"}
 ```
 
-### Coverage Requirements
+Это тот же контракт, что проверяет `tests/test_health.py`: там ожидаемое тело
+ответа лежит константой `EXPECTED_HEALTH_BODY`, а не литералом, и меняется
+вместе с версией. Сигнатуры остальных маршрутов смотрите в
+`src/talentflow/api/main.py` и их тестах в `tests/test_storage.py`.
 
-- Минимум 80% покрытия для нового кода
-- Критичные пути должны быть покрыты на 100%
+### Покрытие тестами
+
+Покрытие в репозитории **не измеряется автоматически**: `pytest-cov` нет ни в
+зависимостях (`pyproject.toml`, `uv.lock`), ни в CI. Требования «80% для нового
+кода» и «100% критичных путей» как измеримые правила здесь не действуют — их
+нечем проверить.
+
+Что действует на практике:
+
+- **Каждая новая функциональность получает тесты.** Это проверяет CI —
+  ревьювер отклонит PR без теста на новое поведение.
+- **Закрывайте ветки кода, которые реально можете закрыть.** Полезный ориентир —
+  запустить `uv run pytest --cov=... --cov-report=term` локально, если у вас
+  установлен `pytest-cov`, но результат нигде не хранится и не гейтит PR.
+
+Решение о добавлении измерителя (`pytest-cov` и шаг в CI) — отдельное
+(владелец), в этой задаче зависимости не менялись.
 
 ---
 
