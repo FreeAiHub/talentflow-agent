@@ -22,18 +22,27 @@ OAuth-согласие) — до его подключения шаблоны п
 
 ## Файлы
 
-| Файл | Роль | Модель |
+| Файл | Роль | Модель (как в шапке файла) |
 |------|------|--------|
 | [`01-architect.md`](01-architect.md) | Развилки стека, ADR, схемы данных | `deepseek/deepseek-v4.1-flash` |
-| [`02-builder.md`](02-builder.md) | Реализация задач дня | `deepseek/deepseek-v4-flash` |
-| [`03-verifier.md`](03-verifier.md) | Независимая проверка DoD | `deepseek/deepseek-v4.1-flash` |
+| [`02-builder.md`](02-builder.md) | Реализация задач дня | `deepseek/deepseek-v4-flash-0731` |
+| [`03-verifier.md`](03-verifier.md) | Независимая проверка DoD | `z-ai/glm-5.3` |
 | [`04-researcher.md`](04-researcher.md) | Факты и цены со ссылками | `xiaomi/mimo-v2.5` |
 | [`05-analyst.md`](05-analyst.md) | Сравнение вариантов, инфраструктура | `qwen/qwen3.8-flash` |
-| [`06-bulk-editor.md`](06-bulk-editor.md) | Механические правки по репозиторию | `deepseek/deepseek-v4-flash` |
+| [`06-bulk-editor.md`](06-bulk-editor.md) | Механические правки по репозиторию | `deepseek/deepseek-v4-flash-0731` |
 | [`07-routine.md`](07-routine.md) | Тесты по шаблону, docstrings, типы | `deepseek/deepseek-v4-flash` |
+| [`08-repo-keeper.md`](08-repo-keeper.md) | Issue → ветка → PR (постоянная работа с репо) | `deepseek/deepseek-v4-flash-0731` |
+| [`09-poster.md`](09-poster.md) | Пост дня из фактов проекта | `deepseek/deepseek-v4-flash-0731` |
+| [`10-fact-checker.md`](10-fact-checker.md) | Фактчек поста против файлов проекта | `z-ai/glm-5.3` |
 
 Полные описания ролей — в [`docs/AGENT-ROSTER.md`](../../docs/AGENT-ROSTER.md),
-правило выбора модели — в [`docs/MODEL-ROTATION.md`](../../docs/MODEL-ROTATION.md).
+порядок волн и правила приёмки — в
+[`docs/AGENT-GRID.md`](../../docs/AGENT-GRID.md), правило выбора модели — в
+[`docs/MODEL-ROTATION.md`](../../docs/MODEL-ROTATION.md).
+
+Роли `08`–`10` — новые: они закрывают не «день плана», а постоянную работу
+(репозиторий и ежедневный постинг). Правила публикаций, которые обязаны
+соблюдать `09` и `10`, лежат в [`docs/POSTING.md`](../../docs/POSTING.md).
 
 > **Модели в таблице — самая дешёвая ступень, которая справляется.** Дорогая
 > берётся только при зафиксированном провале дешёвой: замер 23.09.2026 показал,

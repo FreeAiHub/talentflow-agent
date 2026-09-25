@@ -32,6 +32,8 @@
 | [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) | десятидневный план и его выполнение |
 | [CASE.md](CASE.md) | разбор: что нашёл первый живой прогон и где продукт слабее, чем выглядел |
 | [AGENT-ROSTER.md](AGENT-ROSTER.md) | роли агентов в разработке |
+| [AGENT-GRID.md](AGENT-GRID.md) | сетка агентов: волны, проверка, гейты, журнал прогона |
+| [POSTING.md](POSTING.md) | ежедневный постинг: источники фактов, запреты, включение публикации |
 | [MODEL-ROTATION.md](MODEL-ROTATION.md) | выбор моделей по цене и качеству |
 | [EVAL-BASELINE.md](EVAL-BASELINE.md) | baseline качества скоринга |
 
