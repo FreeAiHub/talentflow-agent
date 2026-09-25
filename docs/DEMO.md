@@ -180,7 +180,8 @@ uv run alembic upgrade head
 
 # Сбор и запись в базу — стадия конвейера.
 uv run python -m talentflow.parsers --source djinni --limit 15
-uv run python -m talentflow.pipeline --parse-limit 0 --score-limit 5
+# Оценка записанного — отдельная стадия.
+uv run python -m talentflow.scorers --limit 5
 uv run python -m talentflow.generators --limit 2 --min-score 0.6
 
 uv run uvicorn talentflow.api.main:app --port 8000 &
