@@ -77,15 +77,15 @@ and the gate work, **not** that the scoring is accurate. For a live run use
 uv run python -m talentflow.pipeline --parse-limit 20 --score-limit 20 --generate-limit 5
 
 # individual stages
-uv run python -m talentflow.parsers      # prints the listing; does NOT store (see #40)
+uv run python -m talentflow.parsers      # collects and stores new vacancies
 uv run python -m talentflow.scorers      # score only
 uv run python -m talentflow.generators   # drafts only
 uv run python -m talentflow.evals        # scoring quality metrics
 ```
 
-`pipeline` (the `parse` stage) is what stores vacancies. The `parsers` command
-collects the listing and **prints it without saving**; the gap between its name
-and its behaviour is tracked in issue #40.
+All stages share one database: `parsers` collects vacancies and stores the new
+ones (re-running does not duplicate), the other stages read what is stored and
+add to it.
 
 A database is required: `TALENTFLOW_DATABASE_URL` (default
 `sqlite:///./talentflow.db`). Create the schema with

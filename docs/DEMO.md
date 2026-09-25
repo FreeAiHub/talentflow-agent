@@ -179,9 +179,8 @@ export TALENTFLOW_DATABASE_URL="sqlite:///./demo.db"
 uv run alembic upgrade head
 
 # Сбор и запись в базу — стадия конвейера.
-# Внимание: `python -m talentflow.parsers` только печатает выдачу и в базу НЕ
-# пишет (см. #40), поэтому наполнять базу нужно через pipeline.
-uv run python -m talentflow.pipeline --parse-limit 15 --score-limit 5
+uv run python -m talentflow.parsers --source djinni --limit 15
+uv run python -m talentflow.pipeline --parse-limit 0 --score-limit 5
 uv run python -m talentflow.generators --limit 2 --min-score 0.6
 
 uv run uvicorn talentflow.api.main:app --port 8000 &
@@ -192,5 +191,5 @@ curl -X POST localhost:8000/api/v1/applications/1/approve
 
 ---
 
-*Обновлено: 24.09.2026. Оффлайн-вывод воспроизводится одной командой; живой
+*Обновлено: 25.09.2026. Оффлайн-вывод воспроизводится одной командой; живой
 прогон 24.09.2026 записан в разделе «Живой режим».*

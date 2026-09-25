@@ -77,15 +77,14 @@ uv run python scripts/demo.py
 uv run python -m talentflow.pipeline --parse-limit 20 --score-limit 20 --generate-limit 5
 
 # отдельные стадии
-uv run python -m talentflow.parsers      # показывает выдачу; в базу НЕ пишет (см. #40)
+uv run python -m talentflow.parsers      # сбор и запись новых вакансий в базу
 uv run python -m talentflow.scorers      # только оценка
 uv run python -m talentflow.generators   # только черновики
 uv run python -m talentflow.evals        # метрики качества скоринга
 ```
 
-Вакансии в базу записывает `pipeline` (стадия `parse`). Команда `parsers`
-собирает выдачу и **печатает её, не сохраняя**: расхождение между названием и
-поведением зафиксировано в issue #40.
+Стадии работают с одной базой: `parsers` собирает вакансии и сохраняет новые
+(повторный прогон не дублирует), остальные читают записанное и дополняют.
 
 Требуется база: `TALENTFLOW_DATABASE_URL` (по умолчанию `sqlite:///./talentflow.db`).
 Схема создаётся миграциями: `uv run alembic upgrade head`.
