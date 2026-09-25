@@ -9,7 +9,9 @@ It is built for one specialist or a small outstaffing team that wants to see
 ## Status
 
 Runs end to end on a single machine: collect → de-duplicate → score → draft →
-approve → notify. Last commit 23.09.2026.
+approve → notify. What a live run actually proved, and what it did not, is in
+[docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md); the last commit date is not
+quoted here because it goes stale faster than it can be read.
 
 Not a consumer service: you run it on your own server, storage is PostgreSQL or
 SQLite, and there is no web interface.
@@ -75,11 +77,15 @@ and the gate work, **not** that the scoring is accurate. For a live run use
 uv run python -m talentflow.pipeline --parse-limit 20 --score-limit 20 --generate-limit 5
 
 # individual stages
-uv run python -m talentflow.parsers      # collect only
+uv run python -m talentflow.parsers      # prints the listing; does NOT store (see #40)
 uv run python -m talentflow.scorers      # score only
 uv run python -m talentflow.generators   # drafts only
 uv run python -m talentflow.evals        # scoring quality metrics
 ```
+
+`pipeline` (the `parse` stage) is what stores vacancies. The `parsers` command
+collects the listing and **prints it without saving**; the gap between its name
+and its behaviour is tracked in issue #40.
 
 A database is required: `TALENTFLOW_DATABASE_URL` (default
 `sqlite:///./talentflow.db`). Create the schema with
@@ -122,12 +128,12 @@ LLM tracing is opt-in (`pip install -e ".[observability]"`, Langfuse).
 
 ## Tests
 
-**293 tests, no network** — verified 23.09.2026. The run takes about ten seconds
-on a laptop; the exact time depends on the machine, so it is not quoted as a
-property of the project.
+**297 tests, no network** — the run on 24.09.2026 took 34 seconds on the
+development machine; the exact time depends on the machine, so it is not quoted
+as a property of the project.
 
 ```bash
-uv run pytest -q        # 293 passed
+uv run pytest -q        # 297 passed
 uv run ruff check .     # All checks passed!
 uv run mypy
 ```

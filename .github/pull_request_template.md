@@ -16,7 +16,7 @@
 <!--
 Не «тесты проходят», а что именно запускали. Пример:
 
-    uv run pytest -q        # 293 passed
+    uv run pytest -q        # 297 passed — число растёт, важен нулевой код возврата
     uv run python scripts/demo.py   # дошло до approved
 -->
 
