@@ -39,9 +39,8 @@ src = ["src", "tests"]
 # Ruff >= 0.16 lints/formats Python blocks inside *.md by default. Docs are
 # prose, not code under test — keep the linter on real Python sources only.
 include = ["*.py", "*.pyi", "**/pyproject.toml"]
-# examples/ is an illustrative mock (imports a non-existent module), not
-# maintained as production code. Bring it under lint when it becomes runnable.
-extend-exclude = ["examples"]
+# The sole examples/ file was a mock of a Vapi integration the codebase does
+# not have; it was removed (see the commit for #27). Nothing needs an exclude.
 
 [tool.ruff.lint]
 select = [

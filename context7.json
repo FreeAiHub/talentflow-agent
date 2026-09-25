@@ -8,7 +8,6 @@
   ],
   "excludeFolders": [
     "tests",
-    "examples",
     "workflows"
   ],
   "excludeFiles": [
