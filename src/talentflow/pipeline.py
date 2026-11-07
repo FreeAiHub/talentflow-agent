@@ -142,15 +142,30 @@ async def _recorded(
 
 
 async def run_parse(session: AsyncSession, settings: Settings, *, limit: int | None = None) -> int:
-    """Collect vacancies from Djinni and store the new ones."""
-    parser = DjinniParser(limit=limit or settings.pipeline_parse_limit)
+    """Collect vacancies from Djinni and store the new ones.
+
+    ``limit=0`` disables the stage, the same way ``run_generate`` treats its own
+    limit: an explicit zero means "skip", not "use the default".
+    """
+    wanted = limit if limit is not None else settings.pipeline_parse_limit
+    if wanted <= 0:
+        return 0
+
+    parser = DjinniParser(limit=wanted)
     vacancies = await parser.collect()
     return await save_vacancies(session, vacancies)
 
 
 async def run_score(session: AsyncSession, settings: Settings, *, limit: int | None = None) -> int:
-    """Score stored vacancies that do not have a score yet."""
-    candidates = await list_vacancies(session, limit=limit or settings.pipeline_score_limit)
+    """Score stored vacancies that do not have a score yet.
+
+    ``limit=0`` disables the stage, mirroring ``run_parse`` and ``run_generate``.
+    """
+    wanted = limit if limit is not None else settings.pipeline_score_limit
+    if wanted <= 0:
+        return 0
+
+    candidates = await list_vacancies(session, limit=wanted)
     unscored = [v for v in candidates if not v.reasons]
     if not unscored:
         return 0
@@ -304,8 +319,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
         prog="python -m talentflow.pipeline",
         description="Run the collection and scoring pipeline once.",
     )
-    parser.add_argument("--parse-limit", type=int, default=None, help="vacancies to collect")
-    parser.add_argument("--score-limit", type=int, default=None, help="vacancies to score")
+    parser.add_argument(
+        "--parse-limit",
+        type=int,
+        default=None,
+        help="vacancies to collect (0 disables parsing)",
+    )
+    parser.add_argument(
+        "--score-limit",
+        type=int,
+        default=None,
+        help="vacancies to score (0 disables scoring)",
+    )
     parser.add_argument(
         "--generate-limit",
         type=int,
