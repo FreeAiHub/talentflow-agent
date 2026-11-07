@@ -128,6 +128,18 @@ async def test_parse_respects_the_configured_limit(
     assert limits == [3]
 
 
+async def test_parse_limit_zero_disables_the_stage(
+    session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An explicit 0 means "skip the stage", not "use the default" (issue #42)."""
+    limits = fake_parser(monkeypatch, [vacancy("1")])
+
+    stored = await run_parse(session, settings_with(pipeline_parse_limit=10), limit=0)
+
+    assert stored == 0
+    assert limits == []
+
+
 async def test_parse_stage_records_a_run(
     session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -176,6 +188,15 @@ async def test_skipped_score_stage_is_recorded_as_skipped(
 
 async def test_score_stage_does_nothing_without_candidates(session: AsyncSession) -> None:
     assert await run_score(session, settings_with()) == 0
+
+
+async def test_score_limit_zero_disables_the_stage(session: AsyncSession) -> None:
+    """An explicit 0 means "skip the stage", not "use the default" (issue #42)."""
+    await save_vacancies(session, [vacancy("1")])
+
+    # No API key is configured, so any attempt to score would raise. Returning 0
+    # without raising proves the stage stopped before the LLM call.
+    assert await run_score(session, settings_with(pipeline_score_limit=10), limit=0) == 0
 
 
 async def test_already_scored_vacancies_are_not_rescored(session: AsyncSession) -> None:
